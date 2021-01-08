@@ -36,7 +36,7 @@ public abstract class Socket {
     }
 
     public Message receiveMessage(int flags) throws NngException {
-        MessageByReference ref = new MessageByReference();
+        final MessageByReference ref = new MessageByReference();
         int rv = Nng.lib().nng_recvmsg(this.socket, ref, flags);
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));

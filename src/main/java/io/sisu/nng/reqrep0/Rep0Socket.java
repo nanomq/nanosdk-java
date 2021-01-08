@@ -8,7 +8,7 @@ import io.sisu.nng.internal.SocketStruct;
 
 public class Rep0Socket extends Socket {
 
-    public Rep0Socket() throws Exception {
+    public Rep0Socket() throws NngException {
         super(Nng.lib()::nng_rep0_open);
     }
 }

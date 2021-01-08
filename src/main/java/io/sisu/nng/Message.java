@@ -8,6 +8,8 @@ import io.sisu.nng.internal.MessagePointer;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class Message {
     protected boolean valid = true;
@@ -39,18 +41,30 @@ public class Message {
         return valid;
     }
 
-    public void append(byte[] data) {
+    public void append(byte[] data) throws NngException {
         int rv = Nng.lib().nng_msg_append(this.msg, data, data.length);
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
+    }
+
+    public void append(String s, Charset charset) throws NngException {
+        append(s.getBytes(charset));
+    }
+
+    public void append(String s) throws NngException {
+        append(s, Charset.defaultCharset());
     }
 
     public int getBodyLen() {
         return Nng.lib().nng_msg_len(this.msg);
     }
 
+    // Returns a reference to a Direct ByteBuffer that provides access to the Body of the Message
     public ByteBuffer getBody() {
         int len = getBodyLen();
         if (len == 0) {
-            return ByteBuffer.allocate(0);
+            return ByteBuffer.allocateDirect(0);
         }
 
         BodyPointer body = Nng.lib().nng_msg_body(this.msg);
@@ -58,7 +72,22 @@ public class Message {
             // TODO: when does NNG return null here? is that possible?
             return null;
         }
-
         return body.getPointer().getByteBuffer(0, len);
+    }
+
+    public ByteBuffer getBodyOnHeap() {
+        ByteBuffer body = getBody();
+        if (body == null) {
+            // TODO: does this happen? No idea.
+            return null;
+        }
+
+        final ByteBuffer buffer = ByteBuffer.allocate(body.limit());
+
+        // XXX: naive copy for now...could optimize with chunks later
+        while (body.hasRemaining()) {
+            buffer.put(body.get());
+        }
+        return buffer.flip();
     }
 }

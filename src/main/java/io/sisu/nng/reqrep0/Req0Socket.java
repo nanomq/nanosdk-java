@@ -8,7 +8,7 @@ import io.sisu.nng.internal.SocketStruct;
 
 public class Req0Socket extends Socket {
 
-    public Req0Socket() throws Exception {
+    public Req0Socket() throws NngException {
         super(Nng.lib()::nng_req0_open);
     }
 }
