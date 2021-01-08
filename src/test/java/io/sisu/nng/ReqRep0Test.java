@@ -1,12 +1,18 @@
 package io.sisu.nng;
 
+import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
 import io.sisu.nng.internal.*;
+import io.sisu.nng.reqrep0.Rep0Socket;
+import io.sisu.nng.reqrep0.Req0Socket;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class ReqRep0Test {
@@ -27,7 +33,29 @@ public class ReqRep0Test {
     }
 
     @Test
-    public void TestCanSendAnReceive() {
+    public void CanSendAndReceive() throws Exception {
+        final String url = String.format("inproc://%s",
+                new Throwable().getStackTrace()[0].getMethodName());
+
+        Socket req = new Req0Socket();
+        Socket rep = new Rep0Socket();
+
+        rep.listen(url);
+        req.dial(url);
+
+        Message msg = new Message();
+        msg.append("hey man".getBytes(StandardCharsets.UTF_8));
+        req.sendMessage(msg);
+        Assertions.assertFalse(msg.isValid());
+
+        Message msg2 = rep.receiveMessage();
+        Assertions.assertTrue(msg2.isValid());
+        Assertions.assertEquals("hey man",
+                Charset.defaultCharset().decode(msg2.getBody()).toString());
+    }
+
+    @Test
+    public void CanSendAndReceiveLowLevel() {
         final String url = String.format("inproc://%s",
                 new Throwable().getStackTrace()[0].getMethodName());
         SocketStruct reqPtr = new SocketStruct();
@@ -48,7 +76,7 @@ public class ReqRep0Test {
 
         final String payload = "Peace be the journey";
         ByteBuffer buffer = ByteBuffer.wrap(payload.getBytes(StandardCharsets.UTF_8));
-        check(lib.nng_msg_append(msg, buffer, buffer.limit()));
+        check(lib.nng_msg_append(msg, buffer.array(), buffer.limit()));
 
         check(lib.nng_sendmsg(req, msg, 0));
 
