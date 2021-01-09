@@ -2,8 +2,11 @@ package io.sisu.nng.internal;
 
 import com.sun.jna.Callback;
 import com.sun.jna.Library;
+import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.NativeLongByReference;
+import com.sun.jna.ptr.ShortByReference;
 
 import java.nio.ByteBuffer;
 
@@ -98,7 +101,7 @@ public interface NngLibrary extends Library {
     Pointer nng_aio_get_output(AioPointer aio, int index);
     int nng_aio_result(AioPointer aio);
     void nng_aio_set_input(AioPointer aio, int index, Pointer param);
-    int nng_aio_set_iov(AioPointer aio, int niov, Pointer iov); // TODO: iov
+    int nng_aio_set_iov(AioPointer aio, int niov, IovStruct[] iov); // TODO: iov
     void nng_aio_set_msg(AioPointer aio, MessagePointer msg);
     void nng_aio_set_output(AioPointer aio, int index, Pointer result);
     void nng_aio_set_timeout(AioPointer aio, int timeoutMillis);
@@ -162,4 +165,52 @@ public interface NngLibrary extends Library {
 
     // HTTP
     // TODO: HTTP
+    void nng_http_conn_close(Pointer client);
+    void nng_http_conn_read(Pointer client, AioPointer aio);
+    void nng_http_conn_read_all(Pointer conn, AioPointer aio);
+    void nng_http_conn_read_req(Pointer conn, HttpReqPointer req, AioPointer aio);
+    void nng_http_conn_read_res(Pointer conn, HttpResPointer res, AioPointer aio);
+    void nng_http_conn_write_all(Pointer conn, AioPointer aio);
+    void nng_http_conn_write_req(Pointer conn, HttpReqPointer req, AioPointer aio);
+    void nng_http_conn_write_res(Pointer conn, HttpResPointer res, AioPointer aio);
+    // ...requests
+    int nng_http_req_add_header(HttpReqPointer req, String key, String val);
+    int nng_http_req_alloc(HttpReqPointerByReference req, UrlStruct url);
+    int nng_http_req_copy_data(HttpReqPointer req, ByteBuffer data, int size);
+    int nng_http_req_del_header(HttpReqPointer req, String key);
+    int nng_http_req_free(HttpReqPointer req);
+    int nng_http_req_get_data(HttpReqPointer req, BodyPointerByReference ref, IntByReference size);
+    String nng_http_req_get_header(HttpReqPointer req, String key);
+    String nng_http_req_get_method(HttpReqPointer req);
+    String nng_http_req_get_uri(HttpReqPointer req);
+    String nng_http_req_get_version(HttpReqPointer req);
+    void nng_http_req_reset(HttpReqPointer req);
+    int nng_http_req_set_data(HttpReqPointer req, ByteBuffer data, int size);
+    int nng_http_req_set_header(HttpReqPointer req, String key, String val);
+    int nng_http_req_set_method(HttpReqPointer req, String method);
+    int nng_http_req_set_uri(HttpReqPointer req, String uri);
+    int nng_http_req_set_version(HttpReqPointer req, String version);
+    // ...responses
+    int nng_http_res_add_header(HttpResPointer req, String key, String val);
+    int nng_http_res_alloc(HttpResPointerByReference ref);
+    int nng_http_res_alloc_error(HttpResPointerByReference ref, short status);
+    int nng_http_res_copy_data(HttpResPointer res, ByteBuffer data, short size);
+    int nng_http_res_del_header(HttpResPointer res, String key);
+    int nng_http_res_free(HttpResPointer res);
+    void nng_http_res_get_data(HttpResPointer res, PointerByReference ref, Pointer sizeRef);
+    String nng_http_res_get_header(HttpResPointer res, String key);
+    String nng_http_res_get_reason(HttpResPointer res);
+    short nng_http_res_get_status(HttpResPointer res);
+    String nng_http_res_get_version(HttpResPointer res);
+    void nng_http_res_reset(HttpResPointer res);
+    int nng_http_res_set_data(HttpResPointer res, ByteBuffer data, short size);
+    int nng_http_res_set_header(HttpResPointer res, String key, String val);
+    int nng_http_res_set_reason(HttpResPointer res, String reason);
+    int nng_http_res_set_status(HttpResPointer res, short status);
+    int nng_http_res_set_version(HttpResPointer res, String version);
+
+    // ...clients
+    int nng_http_client_alloc(HttpClientPointerByReference client, UrlStruct url);
+    int nng_http_client_free(HttpClientPointer client);
+    void nng_http_client_connect(HttpClientPointer client, AioPointer aio);
 }
