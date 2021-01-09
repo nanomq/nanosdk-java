@@ -4,12 +4,12 @@ import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.ByReference;
 
-public abstract class PointerByReference extends ByReference {
-    public PointerByReference() {
+public abstract class NngPointerByReference extends ByReference {
+    public NngPointerByReference() {
         this(null);
     }
 
-    public PointerByReference(Pointer value) {
+    public NngPointerByReference(Pointer value) {
         super(Native.POINTER_SIZE);
         setValue(value);
     }

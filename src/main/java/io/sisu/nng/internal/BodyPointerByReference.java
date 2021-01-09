@@ -2,7 +2,7 @@ package io.sisu.nng.internal;
 
 import com.sun.jna.Pointer;
 
-public class BodyPointerByReference extends PointerByReference {
+public class BodyPointerByReference extends NngPointerByReference {
     public BodyPointerByReference() {
 
     }
