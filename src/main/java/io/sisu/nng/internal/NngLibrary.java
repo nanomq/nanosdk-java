@@ -151,6 +151,8 @@ public interface NngLibrary extends Library {
 
     // URL Object
     // TODO: URL Object
+    int nng_url_parse(UrlByReference urlPointer, String rawUrl);
+    int nng_url_free(UrlStruct url);
 
     // Supplemental API
     // TODO: Are these needed?
