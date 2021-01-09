@@ -197,7 +197,7 @@ public interface NngLibrary extends Library {
     int nng_http_res_copy_data(HttpResPointer res, ByteBuffer data, short size);
     int nng_http_res_del_header(HttpResPointer res, String key);
     int nng_http_res_free(HttpResPointer res);
-    void nng_http_res_get_data(HttpResPointer res, PointerByReference ref, Pointer sizeRef);
+    void nng_http_res_get_data(HttpResPointer res, PointerByReference ref, ShortByReference sizeRef);
     String nng_http_res_get_header(HttpResPointer res, String key);
     String nng_http_res_get_reason(HttpResPointer res);
     short nng_http_res_get_status(HttpResPointer res);

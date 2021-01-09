@@ -84,16 +84,11 @@ public class HttpTest {
         System.out.println("Server: " + server);
 
         // Try getting the body
-        IovStruct iov = new IovStruct();
-        iov.iov_buf = new Memory(16);
-        iov.iov_buf.clear();
-        iov.iov_len = 16;
-        assertOk(Nng.lib().nng_aio_set_iov(aio, 1, new IovStruct[]{iov}));
+        BodyPointerByReference bodyRef = new BodyPointerByReference();
+        ShortByReference sizeRef = new ShortByReference();
+        Nng.lib().nng_http_res_get_data(res, bodyRef, sizeRef);
 
-        Nng.lib().nng_http_conn_read(conn, aio);
-        wait(aio);
-
-        System.out.println(iov.iov_buf.getString(0));
+        System.out.println(sizeRef.getValue());
 
         // Free things
         //assertOk(Nng.lib().nng_http_res_free(res));
