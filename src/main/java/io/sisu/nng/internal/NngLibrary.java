@@ -6,6 +6,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.ShortByReference;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -211,4 +212,19 @@ public interface NngLibrary extends Library {
     int nng_http_client_alloc(HttpClientPointerByReference client, UrlStruct url);
     int nng_http_client_free(HttpClientPointer client);
     void nng_http_client_connect(HttpClientPointer client, AioPointer aio);
+
+    // ...servers
+    int nng_http_handler_alloc_static(HttpHandlerPointerByReference handlerRef, String path,
+                                      Pointer data, int size, String contentType);
+    void nng_http_handler_free(HttpHandlerPointer handler);
+    int nng_http_server_add_handler(HttpServerPointer server, HttpHandlerPointer handler);
+    int nng_http_server_del_handler(HttpServerPointer server, HttpHandlerPointer handler);
+    int nng_http_server_get_addr(HttpServerPointer server, SockAddr addr);
+    //...tls
+    int nng_http_server_hold(HttpServerPointerByReference serverRef, UrlStruct url);
+    void nng_http_server_release(HttpServerPointer server);
+    //todo: more
+    int nng_http_server_start(HttpServerPointer server);
+    void nng_http_server_stop(HttpServerPointer server);
+
 }
