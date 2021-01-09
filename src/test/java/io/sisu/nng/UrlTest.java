@@ -1,6 +1,5 @@
 package io.sisu.nng;
 
-import com.sun.jna.Pointer;
 import io.sisu.nng.internal.UrlByReference;
 import io.sisu.nng.internal.UrlStruct;
 import org.junit.jupiter.api.Assertions;

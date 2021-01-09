@@ -1,18 +1,10 @@
 package io.sisu.nng;
 
-import com.sun.jna.Memory;
-import com.sun.jna.Native;
 import com.sun.jna.Pointer;
-import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.NativeLongByReference;
-import com.sun.jna.ptr.ShortByReference;
 import io.sisu.nng.internal.*;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 public class HttpTest {
@@ -35,7 +27,7 @@ public class HttpTest {
     //@Disabled("Requires a HTTP server, so this is only available for manual testing")
     public void HttpClientTest() {
         UrlByReference urlRef = new UrlByReference();
-        assertOk(Nng.lib().nng_url_parse(urlRef, "http://localhost:8888/hello.txt"));
+        assertOk(Nng.lib().nng_url_parse(urlRef, "http://localhost:8888/"));
         UrlStruct url = urlRef.getUrl();
 
         HttpReqPointerByReference reqRef = new HttpReqPointerByReference();
@@ -78,21 +70,29 @@ public class HttpTest {
         // Try getting a header
         String contentLength = Nng.lib().nng_http_res_get_header(res, "Content-Length");
         Assertions.assertFalse(contentLength.isEmpty());
-        System.out.println("Content-Length: " + contentLength);
+        int bodyLen = Integer.parseInt(contentLength);
+        System.out.println("Content-Length: " + bodyLen);
 
         String server = Nng.lib().nng_http_res_get_header(res, "Server");
         System.out.println("Server: " + server);
 
         // Try getting the body
-        BodyPointerByReference bodyRef = new BodyPointerByReference();
-        ShortByReference sizeRef = new ShortByReference();
-        Nng.lib().nng_http_res_get_data(res, bodyRef, sizeRef);
+        IovStruct[] array = IovStruct.allocate(128, 128, 128);
 
-        System.out.println(sizeRef.getValue());
+        assertOk(Nng.lib().nng_aio_set_iov(aio, array.length, array));
+        Nng.lib().nng_http_conn_read(conn, aio);
+        wait(aio);
 
+        for (IovStruct iov : array) {
+            System.out.println(iov);
+        }
+
+        //System.out.println(StandardCharsets.UTF_8.decode(iov.iov_buf).toString());
+        //System.out.println(StandardCharsets.UTF_8.decode(array.getIov(0).iov_buf).toString());
+        //System.out.println(StandardCharsets.UTF_8.decode(array.getIov(1).iov_buf).toString());
         // Free things
-        //assertOk(Nng.lib().nng_http_res_free(res));
-        //assertOk(Nng.lib().nng_http_req_free(req));
-        //assertOk(Nng.lib().nng_http_client_free(client));
+        assertOk(Nng.lib().nng_http_res_free(res));
+        assertOk(Nng.lib().nng_http_req_free(req));
+        assertOk(Nng.lib().nng_http_client_free(client));
     }
 }

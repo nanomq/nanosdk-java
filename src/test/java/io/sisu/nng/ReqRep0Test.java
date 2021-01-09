@@ -1,6 +1,5 @@
 package io.sisu.nng;
 
-import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
 import io.sisu.nng.internal.*;
 import io.sisu.nng.reqrep0.Rep0Socket;
@@ -9,9 +8,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 

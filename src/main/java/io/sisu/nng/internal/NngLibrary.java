@@ -2,10 +2,9 @@ package io.sisu.nng.internal;
 
 import com.sun.jna.Callback;
 import com.sun.jna.Library;
-import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
+import com.sun.jna.Structure;
 import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.NativeLongByReference;
 import com.sun.jna.ptr.ShortByReference;
 
 import java.nio.ByteBuffer;
