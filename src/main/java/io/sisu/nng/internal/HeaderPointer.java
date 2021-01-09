@@ -2,5 +2,5 @@ package io.sisu.nng.internal;
 
 import com.sun.jna.PointerType;
 
-public class MessagePointer extends PointerType {
+public class HeaderPointer extends PointerType {
 }

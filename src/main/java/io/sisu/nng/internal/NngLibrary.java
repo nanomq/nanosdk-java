@@ -2,11 +2,9 @@ package io.sisu.nng.internal;
 
 import com.sun.jna.Callback;
 import com.sun.jna.Library;
-import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -47,7 +45,7 @@ public interface NngLibrary extends Library {
 
     // Messages
     int nng_msg_alloc(MessageByReference msgRef, int size);
-    int nng_msg_append(MessagePointer msg, byte[] buf, int size);
+    int nng_msg_append(MessagePointer msg, ByteBuffer buf, int size);
     BodyPointer nng_msg_body(MessagePointer msg);
     int nng_msg_chop(MessagePointer msg, int size);
     int nng_msg_chop_u16(MessagePointer msg, short size);
@@ -57,7 +55,7 @@ public interface NngLibrary extends Library {
     int nng_msg_dup(MessageByReference dup, MessagePointer orig);
     int nng_msg_free(MessagePointer msg);
     PipeStruct.ByValue nng_msg_get_pipe(MessagePointer msg);
-    int nng_msg_insert(MessagePointer msg, byte[] buf, int size);
+    int nng_msg_insert(MessagePointer msg, ByteBuffer buf, int size);
     int nng_msg_insert_u16(MessagePointer msg, ByteBuffer buf, short size);
     int nng_msg_insert_u32(MessagePointer msg, ByteBuffer buf, int size);
     int nng_msg_insert_u64(MessagePointer msg, ByteBuffer buf, long size);
@@ -72,7 +70,7 @@ public interface NngLibrary extends Library {
     int nng_sendmsg(SocketStruct.ByValue socket, MessagePointer msg, int flags);
 
     // Message Header Handling
-    Pointer nng_msg_header(MessagePointer msg);
+    HeaderPointer nng_msg_header(MessagePointer msg);
     int nng_msg_header_append(MessagePointer msg, ByteBuffer buf, int size);
     int nng_msg_header_chop(MessagePointer msg, int size);
     int nng_msg_header_chop_u16(MessagePointer msg, short size);

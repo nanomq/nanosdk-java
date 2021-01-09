@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class Pair0Test {
@@ -37,6 +38,10 @@ public class Pair0Test {
             Message msgA = pairA.receiveMessage();
             Assertions.assertEquals(hello,
                     StandardCharsets.UTF_8.decode(msgA.getBody()).toString());
+
+            pairB.sendMessage(ByteBuffer.wrap("Hello again!".getBytes(StandardCharsets.UTF_8)));
+            Assertions.assertEquals("Hello again!",
+                    StandardCharsets.UTF_8.decode(pairA.receiveMessage().getBody()).toString());
 
         } catch (NngException e) {
             Assertions.fail(e);

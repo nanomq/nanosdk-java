@@ -76,7 +76,7 @@ public class ReqRep0Test {
 
         final String payload = "Peace be the journey";
         ByteBuffer buffer = ByteBuffer.wrap(payload.getBytes(StandardCharsets.UTF_8));
-        check(lib.nng_msg_append(msg, buffer.array(), buffer.limit()));
+        check(lib.nng_msg_append(msg, buffer, buffer.limit()));
 
         check(lib.nng_sendmsg(req, msg, 0));
 

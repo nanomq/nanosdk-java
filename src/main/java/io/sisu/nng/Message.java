@@ -1,15 +1,13 @@
 package io.sisu.nng;
 
-import com.sun.jna.Memory;
 import com.sun.jna.Pointer;
 import io.sisu.nng.internal.BodyPointer;
+import io.sisu.nng.internal.HeaderPointer;
 import io.sisu.nng.internal.MessageByReference;
 import io.sisu.nng.internal.MessagePointer;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 public class Message {
     protected boolean valid = true;
@@ -33,6 +31,23 @@ public class Message {
         this.msg = pointer;
     }
 
+
+    public void appendToHeader(ByteBuffer data) throws NngException {
+        final int len = data.limit() - data.position();
+        int rv = Nng.lib().nng_msg_header_append(msg, data, len);
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
+    }
+
+    public void insertToHeader(ByteBuffer data) throws NngException {
+        final int len = data.limit() - data.position();
+        int rv = Nng.lib().nng_msg_header_insert(msg, data, len);
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
+    }
+
     public MessagePointer getMessagePointer() {
         return msg;
     }
@@ -41,11 +56,16 @@ public class Message {
         return valid;
     }
 
-    public void append(byte[] data) throws NngException {
-        int rv = Nng.lib().nng_msg_append(this.msg, data, data.length);
+    public void append(ByteBuffer data) throws NngException {
+        final int len = data.limit() - data.position();
+        int rv = Nng.lib().nng_msg_append(msg, data, len);
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
+    }
+
+    public void append(byte[] data) throws NngException {
+        append(ByteBuffer.wrap(data));
     }
 
     public void append(String s, Charset charset) throws NngException {
@@ -57,7 +77,25 @@ public class Message {
     }
 
     public int getBodyLen() {
-        return Nng.lib().nng_msg_len(this.msg);
+        return Nng.lib().nng_msg_len(msg);
+    }
+
+    public int getHeaderLen() {
+        return Nng.lib().nng_msg_header_len(msg);
+    }
+
+    public ByteBuffer getHeader() {
+        int len = getHeaderLen();
+        if (len == 0) {
+            return ByteBuffer.allocateDirect(0);
+        }
+
+        HeaderPointer header = Nng.lib().nng_msg_header(msg);
+        if (header.getPointer() == Pointer.NULL) {
+            // TODO: when does NNG return null here? is that possible?
+            return null;
+        }
+        return header.getPointer().getByteBuffer(0, len);
     }
 
     // Returns a reference to a Direct ByteBuffer that provides access to the Body of the Message
@@ -67,7 +105,7 @@ public class Message {
             return ByteBuffer.allocateDirect(0);
         }
 
-        BodyPointer body = Nng.lib().nng_msg_body(this.msg);
+        BodyPointer body = Nng.lib().nng_msg_body(msg);
         if (body.getPointer() == Pointer.NULL) {
             // TODO: when does NNG return null here? is that possible?
             return null;
