@@ -4,7 +4,9 @@ import com.sun.jna.Callback;
 import com.sun.jna.Library;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.LongByReference;
 import com.sun.jna.ptr.ShortByReference;
+import io.sisu.nng.jna.*;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -22,7 +24,7 @@ public interface NngLibrary extends Library {
     int nng_dial(SocketStruct.ByValue socket, String url, Pointer dialer, int flags);
     int nng_listen(SocketStruct.ByValue socket, String url, Pointer listener, int flags);
     int nng_recv(SocketStruct.ByValue socket, ByteBuffer data, IntByReference size, int flags);
-    int nng_send(SocketStruct.ByValue socket, ByteBuffer data, int size, int flags);
+    int nng_send(SocketStruct.ByValue socket, ByteBuffer data, Size size, int flags);
     int nng_socket_id(SocketStruct.ByValue socket);
 
     // Connection Management - Dialers
@@ -46,45 +48,45 @@ public interface NngLibrary extends Library {
     SocketStruct.ByValue nng_pipe_socket(PipeStruct.ByValue pipe);
 
     // Messages
-    int nng_msg_alloc(MessageByReference msgRef, int size);
-    int nng_msg_append(MessagePointer msg, ByteBuffer buf, int size);
+    int nng_msg_alloc(MessageByReference msgRef, Size size);
+    int nng_msg_append(MessagePointer msg, ByteBuffer buf, Size size);
     BodyPointer nng_msg_body(MessagePointer msg);
-    int nng_msg_chop(MessagePointer msg, int size);
-    int nng_msg_chop_u16(MessagePointer msg, short size);
-    int nng_msg_chop_u32(MessagePointer msg, int size);
-    int nng_msg_chop_u64(MessagePointer msg, long size);
+    int nng_msg_chop(MessagePointer msg, Size size);
+    int nng_msg_chop_u16(MessagePointer msg, UInt16 size);
+    int nng_msg_chop_u32(MessagePointer msg, UInt32 size);
+    int nng_msg_chop_u64(MessagePointer msg, UInt64 size);
     void nng_msg_clear(MessagePointer msg);
     int nng_msg_dup(MessageByReference dup, MessagePointer orig);
     int nng_msg_free(MessagePointer msg);
     PipeStruct.ByValue nng_msg_get_pipe(MessagePointer msg);
-    int nng_msg_insert(MessagePointer msg, ByteBuffer buf, int size);
-    int nng_msg_insert_u16(MessagePointer msg, ByteBuffer buf, short size);
-    int nng_msg_insert_u32(MessagePointer msg, ByteBuffer buf, int size);
-    int nng_msg_insert_u64(MessagePointer msg, ByteBuffer buf, long size);
+    int nng_msg_insert(MessagePointer msg, ByteBuffer buf, Size size);
+    int nng_msg_insert_u16(MessagePointer msg, ByteBuffer buf, UInt16 size);
+    int nng_msg_insert_u32(MessagePointer msg, ByteBuffer buf, UInt32 size);
+    int nng_msg_insert_u64(MessagePointer msg, ByteBuffer buf, UInt64 size);
     int nng_msg_len(MessagePointer msg);
-    int nng_msg_realloc(MessagePointer msg, int size);
+    int nng_msg_realloc(MessagePointer msg, Size size);
     int nng_msg_set_pipe(MessagePointer msg, PipeStruct.ByValue pipe);
-    int nng_msg_trim(MessagePointer msg, int size);
-    int nng_msg_trim_u16(MessagePointer msg, int size);
-    int nng_msg_trim_u32(MessagePointer msg, short size);
-    int nng_msg_trim_u64(MessagePointer msg, long size);
+    int nng_msg_trim(MessagePointer msg, Size size);
+    int nng_msg_trim_u16(MessagePointer msg, UInt16 size);
+    int nng_msg_trim_u32(MessagePointer msg, UInt32 size);
+    int nng_msg_trim_u64(MessagePointer msg, UInt64 size);
     int nng_recvmsg(SocketStruct.ByValue socket, MessageByReference msg, int flags);
     int nng_sendmsg(SocketStruct.ByValue socket, MessagePointer msg, int flags);
 
     // Message Header Handling
     HeaderPointer nng_msg_header(MessagePointer msg);
-    int nng_msg_header_append(MessagePointer msg, ByteBuffer buf, int size);
-    int nng_msg_header_chop(MessagePointer msg, int size);
-    int nng_msg_header_chop_u16(MessagePointer msg, short size);
-    int nng_msg_header_chop_u32(MessagePointer msg, int size);
-    int nng_msg_header_chop_u64(MessagePointer msg, long size);
+    int nng_msg_header_append(MessagePointer msg, ByteBuffer buf, Size size);
+    int nng_msg_header_chop(MessagePointer msg, Size size);
+    int nng_msg_header_chop_u16(MessagePointer msg, UInt16 size);
+    int nng_msg_header_chop_u32(MessagePointer msg, UInt32 size);
+    int nng_msg_header_chop_u64(MessagePointer msg, UInt64 size);
     void nng_msg_header_clear(MessagePointer msg);
-    int nng_msg_header_insert(MessagePointer msg, ByteBuffer buf, int size);
+    int nng_msg_header_insert(MessagePointer msg, ByteBuffer buf, Size size);
     int nng_msg_header_len(MessagePointer msg);
-    int nng_msg_header_trim(MessagePointer msg, int size);
-    int nng_msg_header_trim_u16(MessagePointer msg, short size);
-    int nng_msg_header_trim_u32(MessagePointer msg, int size);
-    int nng_msg_header_trim_u64(MessagePointer msg, long size);
+    int nng_msg_header_trim(MessagePointer msg, Size size);
+    int nng_msg_header_trim_u16(MessagePointer msg, UInt16 size);
+    int nng_msg_header_trim_u32(MessagePointer msg, UInt32 size);
+    int nng_msg_header_trim_u64(MessagePointer msg, UInt64 size);
 
     // Asynchronous Operations
     void nng_aio_abort(AioPointer aio, int err);
@@ -175,16 +177,16 @@ public interface NngLibrary extends Library {
     // ...requests
     int nng_http_req_add_header(HttpReqPointer req, String key, String val);
     int nng_http_req_alloc(HttpReqPointerByReference req, UrlStruct url);
-    int nng_http_req_copy_data(HttpReqPointer req, ByteBuffer data, int size);
+    int nng_http_req_copy_data(HttpReqPointer req, ByteBuffer data, Size size);
     int nng_http_req_del_header(HttpReqPointer req, String key);
     int nng_http_req_free(HttpReqPointer req);
-    int nng_http_req_get_data(HttpReqPointer req, BodyPointerByReference ref, IntByReference size);
+    int nng_http_req_get_data(HttpReqPointer req, BodyPointerByReference ref, SizeByReference size);
     String nng_http_req_get_header(HttpReqPointer req, String key);
     String nng_http_req_get_method(HttpReqPointer req);
     String nng_http_req_get_uri(HttpReqPointer req);
     String nng_http_req_get_version(HttpReqPointer req);
     void nng_http_req_reset(HttpReqPointer req);
-    int nng_http_req_set_data(HttpReqPointer req, ByteBuffer data, int size);
+    int nng_http_req_set_data(HttpReqPointer req, ByteBuffer data, Size size);
     int nng_http_req_set_header(HttpReqPointer req, String key, String val);
     int nng_http_req_set_method(HttpReqPointer req, String method);
     int nng_http_req_set_uri(HttpReqPointer req, String uri);
@@ -193,16 +195,16 @@ public interface NngLibrary extends Library {
     int nng_http_res_add_header(HttpResPointer req, String key, String val);
     int nng_http_res_alloc(HttpResPointerByReference ref);
     int nng_http_res_alloc_error(HttpResPointerByReference ref, short status);
-    int nng_http_res_copy_data(HttpResPointer res, ByteBuffer data, short size);
+    int nng_http_res_copy_data(HttpResPointer res, ByteBuffer data, Size size);
     int nng_http_res_del_header(HttpResPointer res, String key);
     int nng_http_res_free(HttpResPointer res);
-    void nng_http_res_get_data(HttpResPointer res, NngPointerByReference ref, ShortByReference sizeRef);
+    void nng_http_res_get_data(HttpResPointer res, BodyPointerByReference ref, SizeByReference size);
     String nng_http_res_get_header(HttpResPointer res, String key);
     String nng_http_res_get_reason(HttpResPointer res);
     short nng_http_res_get_status(HttpResPointer res);
     String nng_http_res_get_version(HttpResPointer res);
     void nng_http_res_reset(HttpResPointer res);
-    int nng_http_res_set_data(HttpResPointer res, ByteBuffer data, short size);
+    int nng_http_res_set_data(HttpResPointer res, ByteBuffer data, Size size);
     int nng_http_res_set_header(HttpResPointer res, String key, String val);
     int nng_http_res_set_reason(HttpResPointer res, String reason);
     int nng_http_res_set_status(HttpResPointer res, short status);
@@ -215,7 +217,7 @@ public interface NngLibrary extends Library {
 
     // ...servers
     int nng_http_handler_alloc_static(HttpHandlerPointerByReference handlerRef, String path,
-                                      Pointer data, int size, String contentType);
+                                      Pointer data, Size size, String contentType);
     void nng_http_handler_free(HttpHandlerPointer handler);
     int nng_http_server_add_handler(HttpServerPointer server, HttpHandlerPointer handler);
     int nng_http_server_del_handler(HttpServerPointer server, HttpHandlerPointer handler);

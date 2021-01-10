@@ -1,13 +1,18 @@
 package io.sisu.nng;
 
+import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
+import com.sun.jna.ptr.LongByReference;
 import io.sisu.nng.internal.*;
+import io.sisu.nng.jna.Size;
+import io.sisu.nng.jna.SizeByReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class HttpTest {
@@ -43,7 +48,7 @@ public class HttpTest {
         buffer.put(raw);
         HttpHandlerPointerByReference handlerRef = new HttpHandlerPointerByReference();
         assertOk(Nng.lib().nng_http_handler_alloc_static(handlerRef, url.u_path.toString(),
-                Native.getDirectBufferPointer(buffer), buffer.limit(), "text/html; charset=UTF-8"));
+                Native.getDirectBufferPointer(buffer), new Size(buffer.limit()), "text/html; charset=UTF-8"));
         HttpHandlerPointer handler = handlerRef.getHandlerPointer();
         assertOk(Nng.lib().nng_http_server_add_handler(server, handler));
         assertOk(Nng.lib().nng_http_server_start(server));
@@ -110,6 +115,28 @@ public class HttpTest {
     }
 
     @Test
+    public void ResBodyTest() {
+        HttpResPointerByReference resRef = new HttpResPointerByReference();
+        assertOk(Nng.lib().nng_http_res_alloc(resRef));
+        HttpResPointer res = resRef.getHttpReqPointer();
+
+        final String msg = "testing 123";
+        final byte[] rawMsg = msg.getBytes(StandardCharsets.UTF_8);
+        ByteBuffer buf = ByteBuffer.allocateDirect(rawMsg.length);
+        Native.getDirectBufferPointer(buf).setString(0, "testing");
+        assertOk(Nng.lib().nng_http_res_set_data(res, buf, new Size(buf.limit())));
+
+        BodyPointerByReference bodyRef = new BodyPointerByReference();
+        SizeByReference sizeRef = new SizeByReference();
+        Nng.lib().nng_http_res_get_data(res, bodyRef, sizeRef);
+
+        Assertions.assertEquals(rawMsg.length, sizeRef.getSize().convert());
+
+        BodyPointer body = bodyRef.getBodyPointer();
+        System.out.println(body.getPointer().getString(0));
+    }
+
+    @Test
     @Disabled("Requires a HTTP server, so this is only available for manual testing")
     public void HttpClientTest() {
         UrlByReference urlRef = new UrlByReference();
@@ -172,7 +199,6 @@ public class HttpTest {
         for (IovStruct iov : array) {
             System.out.println(iov);
         }
-
         assertOk(Nng.lib().nng_http_res_free(res));
         assertOk(Nng.lib().nng_http_req_free(req));
         assertOk(Nng.lib().nng_http_client_free(client));
@@ -195,19 +221,21 @@ public class HttpTest {
         buffer.put(raw);
         HttpHandlerPointerByReference handlerRef = new HttpHandlerPointerByReference();
         assertOk(Nng.lib().nng_http_handler_alloc_static(handlerRef, "/hello",
-                Native.getDirectBufferPointer(buffer), buffer.limit(), "text/html; charset=UTF-8"));
+                Native.getDirectBufferPointer(buffer), new Size(buffer.limit()), "text/html; charset=UTF-8"));
         HttpHandlerPointer handler = handlerRef.getHandlerPointer();
         assertOk(Nng.lib().nng_http_server_add_handler(server, handler));
         assertOk(Nng.lib().nng_http_server_start(server));
 
         SockAddr addr = new SockAddr();
         assertOk(Nng.lib().nng_http_server_get_addr(server, addr));
-        System.out.println(addr.s_in);
+        SockAddr.Inet inet = addr.readAsInet();
+        Assertions.assertEquals(Integer.parseInt(url.u_port.getPointer().getString(0)),
+                inet.sa_port.convert());
 
         AioPointerByReference aioRef = new AioPointerByReference();
         assertOk(Nng.lib().nng_aio_alloc(aioRef, null, null));
         AioPointer aio = aioRef.getAioPointer();
-        Nng.lib().nng_sleep_aio(25000, aio);
+        Nng.lib().nng_sleep_aio(1000, aio);
         wait(aio);
         Nng.lib().nng_http_server_release(server);
     }

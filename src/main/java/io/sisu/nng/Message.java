@@ -5,6 +5,7 @@ import io.sisu.nng.internal.BodyPointer;
 import io.sisu.nng.internal.HeaderPointer;
 import io.sisu.nng.internal.MessageByReference;
 import io.sisu.nng.internal.MessagePointer;
+import io.sisu.nng.jna.Size;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -19,7 +20,7 @@ public class Message {
 
     public Message(int size) throws NngException {
         final MessageByReference ref = new MessageByReference();
-        int rv = Nng.lib().nng_msg_alloc(ref, size);
+        int rv = Nng.lib().nng_msg_alloc(ref, new Size(size));
         if (rv != 0) {
             final String err = Nng.lib().nng_strerror(rv);
             throw new NngException(err);
@@ -34,7 +35,7 @@ public class Message {
 
     public void appendToHeader(ByteBuffer data) throws NngException {
         final int len = data.limit() - data.position();
-        int rv = Nng.lib().nng_msg_header_append(msg, data, len);
+        int rv = Nng.lib().nng_msg_header_append(msg, data, new Size(len));
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
@@ -42,7 +43,7 @@ public class Message {
 
     public void insertToHeader(ByteBuffer data) throws NngException {
         final int len = data.limit() - data.position();
-        int rv = Nng.lib().nng_msg_header_insert(msg, data, len);
+        int rv = Nng.lib().nng_msg_header_insert(msg, data, new Size(len));
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
@@ -58,7 +59,7 @@ public class Message {
 
     public void append(ByteBuffer data) throws NngException {
         final int len = data.limit() - data.position();
-        int rv = Nng.lib().nng_msg_append(msg, data, len);
+        int rv = Nng.lib().nng_msg_append(msg, data, new Size(len));
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }

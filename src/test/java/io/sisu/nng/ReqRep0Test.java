@@ -2,6 +2,7 @@ package io.sisu.nng;
 
 import com.sun.jna.Pointer;
 import io.sisu.nng.internal.*;
+import io.sisu.nng.jna.Size;
 import io.sisu.nng.reqrep0.Rep0Socket;
 import io.sisu.nng.reqrep0.Req0Socket;
 import org.junit.jupiter.api.Assertions;
@@ -68,12 +69,12 @@ public class ReqRep0Test {
         check(lib.nng_dial(req, url, Pointer.NULL, 0));
 
         MessageByReference msgRef = new MessageByReference();
-        check(lib.nng_msg_alloc(msgRef, 0));
+        check(lib.nng_msg_alloc(msgRef, new Size(0)));
         MessagePointer msg = msgRef.getMessage();
 
         final String payload = "Peace be the journey";
         ByteBuffer buffer = ByteBuffer.wrap(payload.getBytes(StandardCharsets.UTF_8));
-        check(lib.nng_msg_append(msg, buffer, buffer.limit()));
+        check(lib.nng_msg_append(msg, buffer, new Size(buffer.limit())));
 
         check(lib.nng_sendmsg(req, msg, 0));
 
