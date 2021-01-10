@@ -1,6 +1,6 @@
 package io.sisu.nng;
 
-import io.sisu.nng.reqrep0.Pair0Socket;
+import io.sisu.nng.pair.Pair0Socket;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

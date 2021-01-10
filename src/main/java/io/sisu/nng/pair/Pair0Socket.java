@@ -1,4 +1,4 @@
-package io.sisu.nng.reqrep0;
+package io.sisu.nng.pair;
 
 import io.sisu.nng.Nng;
 import io.sisu.nng.NngException;
