@@ -1,27 +1,8 @@
 package io.sisu.nng.jna;
 
 import com.sun.jna.Native;
-import com.sun.jna.Pointer;
-import com.sun.jna.ptr.ByReference;
 
-public class SizeByReference extends ByReference {
-    public SizeByReference() {
-        this(null);
-    }
-
-    public SizeByReference(Pointer value) {
-        super(Native.POINTER_SIZE);
-        setValue(value);
-    }
-
-    public void setValue(Pointer value) {
-        getPointer().setPointer(0, value);
-    }
-
-    public Pointer getValue() {
-        return getPointer().getPointer(0);
-    }
-
+public class SizeByReference extends NumberByReference {
     public Size getSize() {
         Size size = new Size();
 

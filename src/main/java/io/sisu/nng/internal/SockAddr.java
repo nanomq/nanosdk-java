@@ -1,11 +1,14 @@
 package io.sisu.nng.internal;
 
+import com.sun.jna.Native;
 import com.sun.jna.Structure;
 import com.sun.jna.Union;
 import io.sisu.nng.jna.UInt16;
 import io.sisu.nng.jna.UInt32;
 import io.sisu.nng.jna.UInt64;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class SockAddr extends Union {
@@ -39,11 +42,11 @@ public class SockAddr extends Union {
     @FieldOrder({"sa_family", "sa_path"})
     public static class Local extends Structure {
         public UInt16 sa_family;
-        public char[] sa_path;
+        public byte[] sa_path;
 
         public Local() {
             sa_family = new UInt16();
-            sa_path = new char[128];
+            sa_path = new byte[256];
         }
 
         @Override
@@ -55,7 +58,7 @@ public class SockAddr extends Union {
         }
 
         public String getPath() {
-            return String.valueOf(sa_path);
+            return Native.toString(sa_path);
         }
     }
 
@@ -110,6 +113,30 @@ public class SockAddr extends Union {
                     ", sa_nodeid=" + sa_nodeid +
                     ", sa_port=" + sa_port +
                     '}';
+        }
+    }
+
+    public enum Family {
+        NNG_AF_UNSPEC(0),
+        NNG_AF_INPROC(1),
+        NNG_AF_IPC(2),
+        NNG_AF_INET(3),
+        NNG_AF_INET6(4),
+        NNG_AF_ZT(5),
+        UNKNOWN(-1);
+
+        private final int family;
+
+        private Family(int family) {
+            this.family = family;
+        }
+
+        public static Family getFamily(int value) {
+            // XXX: I'm lazy for now
+            return Arrays.stream(values())
+                    .filter(item -> item.family == value)
+                    .findFirst()
+                    .orElse(UNKNOWN);
         }
     }
 }

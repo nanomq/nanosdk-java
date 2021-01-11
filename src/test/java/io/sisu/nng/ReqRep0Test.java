@@ -8,10 +8,12 @@ import io.sisu.nng.reqrep.Req0Socket;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 public class ReqRep0Test {
 
@@ -52,10 +54,14 @@ public class ReqRep0Test {
                 Charset.defaultCharset().decode(msg2.getBody()).toString());
     }
 
+    @TempDir
+    public Path tempDir;
+
     @Test
     public void CanSendAndReceiveLowLevel() {
-        final String url = String.format("inproc://%s",
-                new Throwable().getStackTrace()[0].getMethodName());
+
+        final String url = String.format("ipc://%s/%s",
+                tempDir.toString(), new Throwable().getStackTrace()[0].getMethodName());
         SocketStruct reqPtr = new SocketStruct();
         SocketStruct repPtr = new SocketStruct();
 
@@ -81,6 +87,14 @@ public class ReqRep0Test {
         MessageByReference msgRef2 = new MessageByReference();
         check(lib.nng_recvmsg(rep, msgRef2, 0));
         MessagePointer msg2 = msgRef2.getMessage();
+
+        SockAddr addr = new SockAddr();
+        PipeStruct pipeByRef = Nng.lib().nng_msg_get_pipe(msg2);
+        check(lib.nng_pipe_get_addr(new PipeStruct.ByValue(pipeByRef), NngOptions.REMOTE_ADDR, addr));
+        Assertions.assertEquals(SockAddr.Family.NNG_AF_IPC,
+                SockAddr.Family.getFamily(addr.s_family.intValue()));
+        SockAddr.Local local = addr.readAsIpc();
+        Assertions.assertTrue(local.getPath().startsWith(tempDir.toString()));
 
         int len = lib.nng_msg_len(msg2);
         Assertions.assertTrue(len > 0);

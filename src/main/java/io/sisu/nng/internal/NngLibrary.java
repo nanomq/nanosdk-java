@@ -5,6 +5,7 @@ import com.sun.jna.Library;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.LongByReference;
+import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.ptr.ShortByReference;
 import io.sisu.nng.jna.*;
 
@@ -25,6 +26,15 @@ public interface NngLibrary extends Library {
     int nng_listen(SocketStruct.ByValue socket, String url, Pointer listener, int flags);
     int nng_recv(SocketStruct.ByValue socket, ByteBuffer data, IntByReference size, int flags);
     int nng_send(SocketStruct.ByValue socket, ByteBuffer data, Size size, int flags);
+    int nng_socket_get(SocketStruct.ByValue s, String opt, Pointer val, SizeByReference size);
+    int nng_socket_get_bool(SocketStruct.ByValue s, String opt, IntByReference bool);
+    int nng_socket_get_int(SocketStruct.ByValue s, String opt, IntByReference intRef);
+    int nng_socket_get_size(SocketStruct.ByValue s, String opt, SizeByReference size);
+    int nng_socket_get_uint64(SocketStruct.ByValue s, String opt, UInt64ByReference uint64);
+    int nng_socket_get_string(SocketStruct.ByValue s, String opt, Pointer strings);
+    int nng_socket_get_ptr(SocketStruct.ByValue s, String opt, Pointer pointer);
+    int nng_socket_get_ms(SocketStruct.ByValue s, String opt, IntByReference duration);
+    int nng_socket_get_addr(SocketStruct.ByValue s, String opt, SockAddr addr);
     int nng_socket_id(SocketStruct.ByValue socket);
 
     // Connection Management - Dialers
@@ -46,6 +56,16 @@ public interface NngLibrary extends Library {
     ListenerStruct.ByValue nng_pipe_listener(PipeStruct.ByValue pipe);
     int nng_pipe_notify(SocketStruct.ByValue socket, int pipeEvent, Callback cb, Pointer arg);
     SocketStruct.ByValue nng_pipe_socket(PipeStruct.ByValue pipe);
+    int nng_pipe_get(PipeStruct.ByValue pipe, String opt, Pointer value, SizeByReference size);
+    int nng_pipe_get_int(PipeStruct.ByValue pipe, String opt, IntByReference value);
+    int nng_pipe_get_ms(PipeStruct.ByValue pipe, String opt, IntByReference duration);
+    int nng_pipe_get_ptr(PipeStruct.ByValue pipe, String opt, PointerByReference ref);
+    int nng_pipe_get_addr(PipeStruct.ByValue pipe, String opt, SockAddr addr);
+    // todo: NativeStringPointerByRef?
+    int nng_pipe_get_string(PipeStruct.ByValue pipe, String opt, Pointer ref);
+    int nng_pipe_get_size(PipeStruct.ByValue pipe, String opt, SizeByReference size);
+    int nng_pipe_get_uint64(PipeStruct.ByValue pipe, String opt, UInt64 ref);
+
 
     // Messages
     int nng_msg_alloc(MessageByReference msgRef, Size size);
