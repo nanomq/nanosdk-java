@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 public class AioTest {
 
     @Test
-    public void SimpleAioTest() throws NngException {
+    public void simpleAioTest() throws NngException {
         Callback cb = new CallbackProxy() {
             @Override
             public Object callback(Object[] args) {

@@ -1,10 +1,11 @@
-package io.sisu.nng;
+package io.sisu.nng.reqrep;
 
 import com.sun.jna.Pointer;
+import io.sisu.nng.Message;
+import io.sisu.nng.Nng;
+import io.sisu.nng.Socket;
 import io.sisu.nng.internal.*;
 import io.sisu.nng.jna.Size;
-import io.sisu.nng.reqrep.Rep0Socket;
-import io.sisu.nng.reqrep.Req0Socket;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ public class ReqRep0Test {
     }
 
     @Test
-    public void CanSendAndReceive() throws Exception {
+    public void canSendAndReceive() throws Exception {
         final String url = String.format("inproc://%s",
                 new Throwable().getStackTrace()[0].getMethodName());
 
@@ -52,13 +53,16 @@ public class ReqRep0Test {
         Assertions.assertTrue(msg2.isValid());
         Assertions.assertEquals("hey man",
                 Charset.defaultCharset().decode(msg2.getBody()).toString());
+
+        req.close();
+        rep.close();
     }
 
     @TempDir
     public Path tempDir;
 
     @Test
-    public void CanSendAndReceiveLowLevel() {
+    public void canSendAndReceiveLowLevel() {
 
         final String url = String.format("ipc://%s/%s",
                 tempDir.toString(), new Throwable().getStackTrace()[0].getMethodName());

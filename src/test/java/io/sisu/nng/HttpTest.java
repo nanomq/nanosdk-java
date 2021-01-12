@@ -1,9 +1,7 @@
 package io.sisu.nng;
 
-import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
-import com.sun.jna.ptr.LongByReference;
 import io.sisu.nng.internal.*;
 import io.sisu.nng.jna.Size;
 import io.sisu.nng.jna.SizeByReference;
@@ -12,7 +10,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class HttpTest {
@@ -32,7 +29,7 @@ public class HttpTest {
     }
 
     @Test
-    public void HttpIntegrationTest() {
+    public void httpIntegrationTest() {
         final String hello = "Hello there! How are you?";
         UrlByReference urlRef = new UrlByReference();
         assertOk(Nng.lib().nng_url_parse(urlRef, "http://localhost:9999/hello"));
@@ -115,7 +112,7 @@ public class HttpTest {
     }
 
     @Test
-    public void ResBodyTest() {
+    public void resBodyTest() {
         HttpResPointerByReference resRef = new HttpResPointerByReference();
         assertOk(Nng.lib().nng_http_res_alloc(resRef));
         HttpResPointer res = resRef.getHttpReqPointer();
@@ -138,7 +135,7 @@ public class HttpTest {
 
     @Test
     @Disabled("Requires a HTTP server, so this is only available for manual testing")
-    public void HttpClientTest() {
+    public void httpClientTest() {
         UrlByReference urlRef = new UrlByReference();
         assertOk(Nng.lib().nng_url_parse(urlRef, "http://localhost:8888/"));
         UrlStruct url = urlRef.getUrl();
@@ -206,7 +203,7 @@ public class HttpTest {
 
     @Test
     @Disabled
-    public void HttpServerTest() {
+    public void httpServerTest() {
         UrlByReference urlRef = new UrlByReference();
         assertOk(Nng.lib().nng_url_parse(urlRef, "http://0.0.0.0:9999"));
         UrlStruct url = urlRef.getUrl();

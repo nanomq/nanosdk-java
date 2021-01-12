@@ -4,12 +4,9 @@ import com.sun.jna.Callback;
 import com.sun.jna.Library;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
-import com.sun.jna.ptr.LongByReference;
 import com.sun.jna.ptr.PointerByReference;
-import com.sun.jna.ptr.ShortByReference;
 import io.sisu.nng.jna.*;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -24,8 +21,9 @@ public interface NngLibrary extends Library {
     int nng_close(SocketStruct.ByValue socket);
     int nng_dial(SocketStruct.ByValue socket, String url, Pointer dialer, int flags);
     int nng_listen(SocketStruct.ByValue socket, String url, Pointer listener, int flags);
-    int nng_recv(SocketStruct.ByValue socket, ByteBuffer data, IntByReference size, int flags);
+    int nng_recv(SocketStruct.ByValue socket, ByteBuffer data, SizeByReference size, int flags);
     int nng_send(SocketStruct.ByValue socket, ByteBuffer data, Size size, int flags);
+
     int nng_socket_get(SocketStruct.ByValue s, String opt, Pointer val, SizeByReference size);
     int nng_socket_get_bool(SocketStruct.ByValue s, String opt, IntByReference bool);
     int nng_socket_get_int(SocketStruct.ByValue s, String opt, IntByReference intRef);
@@ -35,6 +33,15 @@ public interface NngLibrary extends Library {
     int nng_socket_get_ptr(SocketStruct.ByValue s, String opt, Pointer pointer);
     int nng_socket_get_ms(SocketStruct.ByValue s, String opt, IntByReference duration);
     int nng_socket_get_addr(SocketStruct.ByValue s, String opt, SockAddr addr);
+
+    int nng_socket_set(SocketStruct.ByValue s, String opt, Pointer val, Size size);
+    int nng_socket_set_bool(SocketStruct.ByValue s, String opt, boolean bool);
+    int nng_socket_set_int(SocketStruct.ByValue s, String opt, int intRef);
+    int nng_socket_set_size(SocketStruct.ByValue s, String opt, Size size);
+    int nng_socket_set_uint64(SocketStruct.ByValue s, String opt, UInt64 uint64);
+    int nng_socket_set_string(SocketStruct.ByValue s, String opt, String string);
+    int nng_socket_set_ptr(SocketStruct.ByValue s, String opt, Pointer pointer);
+    int nng_socket_set_ms(SocketStruct.ByValue s, String opt, int duration);
     int nng_socket_id(SocketStruct.ByValue socket);
 
     // Connection Management - Dialers

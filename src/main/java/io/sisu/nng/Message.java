@@ -1,5 +1,6 @@
 package io.sisu.nng;
 
+import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import io.sisu.nng.internal.BodyPointer;
 import io.sisu.nng.internal.HeaderPointer;
@@ -9,6 +10,7 @@ import io.sisu.nng.jna.Size;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class Message {
     protected boolean valid = true;
@@ -66,15 +68,18 @@ public class Message {
     }
 
     public void append(byte[] data) throws NngException {
-        append(ByteBuffer.wrap(data));
+        final ByteBuffer buffer = ByteBuffer.allocateDirect(data.length);
+        buffer.put(data);
+        buffer.flip();
+        append(buffer);
     }
 
     public void append(String s, Charset charset) throws NngException {
-        append(s.getBytes(charset));
+        append(Native.toByteArray(s, charset));
     }
 
     public void append(String s) throws NngException {
-        append(s, Charset.defaultCharset());
+        append(s, StandardCharsets.UTF_8);
     }
 
     public int getBodyLen() {
@@ -103,7 +108,7 @@ public class Message {
     public ByteBuffer getBody() {
         int len = getBodyLen();
         if (len == 0) {
-            return ByteBuffer.allocateDirect(0);
+            return ByteBuffer.allocate(0);
         }
 
         BodyPointer body = Nng.lib().nng_msg_body(msg);

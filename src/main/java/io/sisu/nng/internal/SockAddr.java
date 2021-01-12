@@ -7,8 +7,6 @@ import io.sisu.nng.jna.UInt16;
 import io.sisu.nng.jna.UInt32;
 import io.sisu.nng.jna.UInt64;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class SockAddr extends Union {

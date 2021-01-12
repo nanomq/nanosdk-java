@@ -21,4 +21,9 @@ public class NngOptions {
     public static final String RECV_SIZE_MAX = "recv-size-max";
     public static final String RECONNECT_TIME_MIN = "reconnect-time-min";
     public static final String RECONNECT_TIME_MAX = "reconnect-time-max";
+
+    // PubSub Options
+    public static final String SUBSCRIBE = "sub:subscribe";
+    public static final String UNSUBSCRIBE = "sub:unsubscribe";
+    public static final String PREFER_NEW_ON_FULL = "sub:prefnew";
 }

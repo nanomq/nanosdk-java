@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 public class UrlTest {
     @Test
-    public void CreateAndDestroyTest() {
+    public void createAndDestroyTest() {
         final String rawUrl = "http://dave:stuff@localhost/ok";
         UrlByReference p = new UrlByReference();
         int rv = Nng.lib().nng_url_parse(p, rawUrl);

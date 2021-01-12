@@ -1,5 +1,7 @@
 package io.sisu.nng;
-import io.sisu.nng.reqrep.*;
+
+import io.sisu.nng.reqrep.Rep0Socket;
+import io.sisu.nng.reqrep.Req0Socket;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;

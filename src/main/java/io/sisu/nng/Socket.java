@@ -2,7 +2,11 @@ package io.sisu.nng;
 
 import com.sun.jna.Pointer;
 import io.sisu.nng.internal.MessageByReference;
+import io.sisu.nng.internal.NngFlags;
+import io.sisu.nng.internal.NngOptions;
 import io.sisu.nng.internal.SocketStruct;
+import io.sisu.nng.jna.Size;
+import io.sisu.nng.jna.SizeByReference;
 
 import java.nio.ByteBuffer;
 import java.util.function.Function;
@@ -18,6 +22,30 @@ public abstract class Socket {
             throw new NngException(err);
         }
         this.socket = new SocketStruct.ByValue(ref);
+    }
+
+    public void close() throws NngException {
+        int rv = Nng.lib().nng_close(this.socket);
+        if (rv != 0) {
+            String err = Nng.lib().nng_strerror(rv);
+            throw new NngException(err);
+        }
+    }
+
+    public void setReceiveTimeout(int timeoutMillis) throws NngException {
+        int rv = Nng.lib().nng_socket_set_ms(this.socket, NngOptions.RECV_TIMEOUT, timeoutMillis);
+        if (rv != 0) {
+            String err = Nng.lib().nng_strerror(rv);
+            throw new NngException(err);
+        }
+    }
+
+    public void setSendTimeout(int timeoutMillis) throws NngException {
+        int rv = Nng.lib().nng_socket_set_ms(this.socket, NngOptions.SEND_TIMEOUT, timeoutMillis);
+        if (rv != 0) {
+            String err = Nng.lib().nng_strerror(rv);
+            throw new NngException(err);
+        }
     }
 
     public void sendMessage(ByteBuffer body) throws NngException {
@@ -82,6 +110,73 @@ public abstract class Socket {
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
+    }
+
+    /**
+     * Sends raw data over the Socket.
+     *
+     * Note: explicitly does NOT support NNG_FLAG_ALLOC option as its assumed the ByteBuffer is
+     * allocated and managed by the JVM.
+     * @param data a directly allocated ByteBuffer of data to send
+     * @param blockUntilSent boolean flag determining if the call waits until the message is sent,
+     *                       or returns immediately after queuing the data, or until a timer expires
+     * @throws NngException if the underlying nng_send call returns non-zero
+     */
+    public void send(ByteBuffer data, boolean blockUntilSent) throws NngException {
+        // TODO: should we convert ByteBuffer's that aren't directly allocated?
+
+        Size size = new Size(data.limit() - data.position());
+        int flags = blockUntilSent ? 0 : NngFlags.NONBLOCK;
+
+        int rv = Nng.lib().nng_send(this.socket, data, size, flags);
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
+    }
+
+    public void send(ByteBuffer data) throws NngException {
+        send(data, true);
+    }
+
+    /**
+     * Receives raw data on the Socket.
+     *
+     * Note: explicitly does NOT support NNG_FLAG_ALLOC, forcing the caller to own and manage the
+     * lifetime of the provided ByteBuffer
+     * @param buffer A directly allocated ByteBuffer to receive data into
+     * @param blockUntilReceived boolean flag determining if the call waits until the message is
+     *                           sent, or returns immediately after queuing the data, or until a
+     *                           timer expires
+     * @return long number of bytes received
+     * @throws NngException
+     */
+    public long receive(ByteBuffer buffer, boolean blockUntilReceived)
+            throws NngException, IllegalArgumentException {
+        if (!buffer.isDirect()) {
+            throw new IllegalArgumentException("ByteBuffer provided is not directly allocated");
+        }
+
+        int flags = blockUntilReceived ? 0 : NngFlags.NONBLOCK;
+
+        // We're not using ALLOC mode for now, so we need to provide the address of our Size
+        // for the nng_recv() to read
+        SizeByReference sizeRef = new SizeByReference();
+        Size size = new Size(buffer.limit() - buffer.position());
+        sizeRef.setSize(size);
+
+        int rv = Nng.lib().nng_recv(this.socket, buffer, sizeRef, flags);
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
+
+        // On success, our size should be updated to reflect the actual data received, which may
+        // be less than the total buffer limit.
+        // TODO: what should we do with this case?
+        return sizeRef.getSize().convert();
+    }
+
+    public long receive(ByteBuffer buffer) throws NngException {
+        return receive(buffer, true);
     }
 
     public int getId() {

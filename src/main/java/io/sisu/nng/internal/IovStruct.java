@@ -1,7 +1,5 @@
 package io.sisu.nng.internal;
 
-import com.sun.jna.Memory;
-import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 
 import java.nio.ByteBuffer;

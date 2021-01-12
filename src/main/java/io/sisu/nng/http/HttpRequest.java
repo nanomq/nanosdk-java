@@ -1,4 +1,4 @@
-package io.sisu.nng;
+package io.sisu.nng.http;
 
 public class HttpRequest {
 }
