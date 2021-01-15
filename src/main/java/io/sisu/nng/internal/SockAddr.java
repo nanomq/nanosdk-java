@@ -3,9 +3,9 @@ package io.sisu.nng.internal;
 import com.sun.jna.Native;
 import com.sun.jna.Structure;
 import com.sun.jna.Union;
-import io.sisu.nng.jna.UInt16;
-import io.sisu.nng.jna.UInt32;
-import io.sisu.nng.jna.UInt64;
+import io.sisu.nng.internal.jna.UInt16;
+import io.sisu.nng.internal.jna.UInt32;
+import io.sisu.nng.internal.jna.UInt64;
 
 import java.util.Arrays;
 

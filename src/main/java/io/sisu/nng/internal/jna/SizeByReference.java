@@ -1,4 +1,4 @@
-package io.sisu.nng.jna;
+package io.sisu.nng.internal.jna;
 
 import com.sun.jna.Native;
 

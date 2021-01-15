@@ -5,8 +5,8 @@ import io.sisu.nng.internal.MessageByReference;
 import io.sisu.nng.internal.NngFlags;
 import io.sisu.nng.internal.NngOptions;
 import io.sisu.nng.internal.SocketStruct;
-import io.sisu.nng.jna.Size;
-import io.sisu.nng.jna.SizeByReference;
+import io.sisu.nng.internal.jna.Size;
+import io.sisu.nng.internal.jna.SizeByReference;
 
 import java.nio.ByteBuffer;
 import java.util.function.Function;

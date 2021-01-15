@@ -5,7 +5,7 @@ import io.sisu.nng.Message;
 import io.sisu.nng.Nng;
 import io.sisu.nng.Socket;
 import io.sisu.nng.internal.*;
-import io.sisu.nng.jna.Size;
+import io.sisu.nng.internal.jna.Size;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

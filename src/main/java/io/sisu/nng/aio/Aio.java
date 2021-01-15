@@ -1,23 +1,36 @@
-package io.sisu.nng;
+package io.sisu.nng.aio;
 
-import com.sun.jna.Callback;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
+import io.sisu.nng.Message;
+import io.sisu.nng.Nng;
+import io.sisu.nng.NngException;
 import io.sisu.nng.internal.AioPointer;
 import io.sisu.nng.internal.AioPointerByReference;
+import io.sisu.nng.internal.MessagePointer;
 
 import java.nio.ByteBuffer;
 
-public class AioContext {
+public class Aio implements AioProxy {
     private final AioPointer aio;
+    private AioCallback cb;
 
-    public AioContext(Callback cb, Pointer arg) throws NngException {
+    public Aio() throws NngException {
+        this(null);
+    }
+
+    public Aio(AioCallback cb) throws NngException {
         AioPointerByReference ref = new AioPointerByReference();
-        final int rv = Nng.lib().nng_aio_alloc(ref, cb, arg);
+        final int rv = Nng.lib().nng_aio_alloc(ref, cb, Pointer.NULL);
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
-        aio = ref.getAioPointer();
+        this.aio = ref.getAioPointer();
+
+        if (cb != null) {
+            this.cb = cb;
+            this.cb.setAioProxy(this);
+        }
     }
 
     public void setOutput(int index, ByteBuffer buffer) {
@@ -59,6 +72,10 @@ public class AioContext {
         Nng.lib().nng_aio_cancel(aio);
     }
 
+    public int getResult() {
+        return Nng.lib().nng_aio_result(aio);
+    }
+
     public void waitForFinish() {
         Nng.lib().nng_aio_wait(aio);
     }
@@ -68,5 +85,23 @@ public class AioContext {
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
+    }
+
+    public AioPointer getAioPointer() {
+        return this.aio;
+    }
+
+    @Override
+    public void setMessage(Message msg) {
+        Nng.lib().nng_aio_set_msg(aio, msg.getMessagePointer());
+    }
+
+    @Override
+    public Message getMessage() {
+        MessagePointer pointer = Nng.lib().nng_aio_get_msg(aio);
+        if (pointer != null && pointer.getPointer() != Pointer.NULL) {
+            return new Message(pointer);
+        }
+        return null;
     }
 }

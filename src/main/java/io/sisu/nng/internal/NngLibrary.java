@@ -5,7 +5,7 @@ import com.sun.jna.Library;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
-import io.sisu.nng.jna.*;
+import io.sisu.nng.internal.jna.*;
 
 import java.nio.ByteBuffer;
 
@@ -179,6 +179,25 @@ public interface NngLibrary extends Library {
     int nng_ctx_open(ContextStruct context, SocketStruct.ByValue socket);
     void nng_ctx_recv(ContextStruct.ByValue context, AioPointer aio);
     void nng_ctx_send(ContextStruct.ByValue context, AioPointer aio);
+
+    int nng_ctx_get(ContextStruct.ByValue s, String opt, Pointer val, SizeByReference size);
+    int nng_ctx_get_bool(ContextStruct.ByValue s, String opt, IntByReference bool);
+    int nng_ctx_get_int(ContextStruct.ByValue s, String opt, IntByReference intRef);
+    int nng_ctx_get_size(ContextStruct.ByValue s, String opt, SizeByReference size);
+    int nng_ctx_get_uint64(ContextStruct.ByValue s, String opt, UInt64ByReference uint64);
+    int nng_ctx_get_string(ContextStruct.ByValue s, String opt, Pointer strings);
+    int nng_ctx_get_ptr(ContextStruct.ByValue s, String opt, Pointer pointer);
+    int nng_ctx_get_ms(ContextStruct.ByValue s, String opt, IntByReference duration);
+    int nng_ctx_get_addr(ContextStruct.ByValue s, String opt, SockAddr addr);
+
+    int nng_ctx_set(ContextStruct.ByValue s, String opt, Pointer val, Size size);
+    int nng_ctx_set_bool(ContextStruct.ByValue s, String opt, boolean bool);
+    int nng_ctx_set_int(ContextStruct.ByValue s, String opt, int intRef);
+    int nng_ctx_set_size(ContextStruct.ByValue s, String opt, Size size);
+    int nng_ctx_set_uint64(ContextStruct.ByValue s, String opt, UInt64 uint64);
+    int nng_ctx_set_string(ContextStruct.ByValue s, String opt, String string);
+    int nng_ctx_set_ptr(ContextStruct.ByValue s, String opt, Pointer pointer);
+    int nng_ctx_set_ms(ContextStruct.ByValue s, String opt, int duration);
 
     // URL Object
     // TODO: URL Object

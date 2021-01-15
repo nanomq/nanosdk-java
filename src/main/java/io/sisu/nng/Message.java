@@ -6,7 +6,7 @@ import io.sisu.nng.internal.BodyPointer;
 import io.sisu.nng.internal.HeaderPointer;
 import io.sisu.nng.internal.MessageByReference;
 import io.sisu.nng.internal.MessagePointer;
-import io.sisu.nng.jna.Size;
+import io.sisu.nng.internal.jna.Size;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -30,7 +30,7 @@ public class Message {
         msg = ref.getMessage();
     }
 
-    protected Message(MessagePointer pointer) {
+    public Message(MessagePointer pointer) {
         this.msg = pointer;
     }
 

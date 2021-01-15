@@ -1,4 +1,4 @@
-package io.sisu.nng.jna;
+package io.sisu.nng.internal.jna;
 
 public class UInt64ByReference extends NumberByReference {
     public UInt64 getUInt64() {
