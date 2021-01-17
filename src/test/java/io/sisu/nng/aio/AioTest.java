@@ -1,5 +1,6 @@
 package io.sisu.nng.aio;
 
+import com.sun.jna.Native;
 import io.sisu.nng.Message;
 import io.sisu.nng.NngException;
 import org.junit.jupiter.api.Assertions;
@@ -68,8 +69,8 @@ public class AioTest {
             Assertions.assertNotNull(msg);
 
             Assertions.assertEquals("aio message",
-                    StandardCharsets.UTF_8.decode(msg.getBody()).toString());
-            }, args);
+                    Native.toString(msg.getBodyOnHeap().array(), StandardCharsets.UTF_8));
+        }, args);
 
         Aio aio = new Aio(null, cb);
         aio.setTimeoutMillis(500);
