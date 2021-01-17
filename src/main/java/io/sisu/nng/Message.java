@@ -7,6 +7,9 @@ import io.sisu.nng.internal.HeaderPointer;
 import io.sisu.nng.internal.MessageByReference;
 import io.sisu.nng.internal.MessagePointer;
 import io.sisu.nng.internal.jna.Size;
+import io.sisu.nng.internal.jna.UInt16;
+import io.sisu.nng.internal.jna.UInt32;
+import io.sisu.nng.internal.jna.UInt32ByReference;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -82,6 +85,11 @@ public class Message {
         append(s, StandardCharsets.UTF_8);
     }
 
+    public void appendU16(int val) {
+        UInt16 uInt16 = new UInt16(val);
+
+    }
+
     public int getBodyLen() {
         return Nng.lib().nng_msg_len(msg);
     }
@@ -133,5 +141,21 @@ public class Message {
             buffer.put(body.get());
         }
         return buffer.flip();
+    }
+
+    public void trim(int len) throws NngException {
+        int rv = Nng.lib().nng_msg_trim(msg, new Size(len));
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
+    }
+
+    public int trim32Bits() throws NngException {
+        UInt32ByReference ref = new UInt32ByReference();
+        int rv = Nng.lib().nng_msg_trim_u32(msg, ref);
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
+        return ref.getUInt32().convert();
     }
 }

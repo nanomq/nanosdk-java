@@ -71,7 +71,7 @@ public class AioTest {
                     StandardCharsets.UTF_8.decode(msg.getBody()).toString());
             }, args);
 
-        Aio aio = new Aio(cb);
+        Aio aio = new Aio(null, cb);
         aio.setTimeoutMillis(500);
         Assertions.assertTrue(aio.begin());
 

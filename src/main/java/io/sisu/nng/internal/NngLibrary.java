@@ -94,9 +94,9 @@ public interface NngLibrary extends Library {
     int nng_msg_realloc(MessagePointer msg, Size size);
     int nng_msg_set_pipe(MessagePointer msg, PipeStruct.ByValue pipe);
     int nng_msg_trim(MessagePointer msg, Size size);
-    int nng_msg_trim_u16(MessagePointer msg, UInt16 size);
-    int nng_msg_trim_u32(MessagePointer msg, UInt32 size);
-    int nng_msg_trim_u64(MessagePointer msg, UInt64 size);
+    int nng_msg_trim_u16(MessagePointer msg, UInt16ByReference size);
+    int nng_msg_trim_u32(MessagePointer msg, UInt32ByReference size);
+    int nng_msg_trim_u64(MessagePointer msg, UInt64ByReference size);
     int nng_recvmsg(SocketStruct.ByValue socket, MessageByReference msg, int flags);
     int nng_sendmsg(SocketStruct.ByValue socket, MessagePointer msg, int flags);
 

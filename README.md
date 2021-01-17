@@ -52,7 +52,7 @@ understanding of nng, but also my use of JNA to expose the library.
 As part of my Java-fication of nng, I'm currently marrying Sockets to their
 protocols explicitly. (Maybe I'll go full on OOP and go overboard here...tbd.)
 
-An [example](./src/test/java/io/sisu/nng/Example.java) of how this simplifies
+An [example](src/test/java/io/sisu/nng/Example.java) of how this simplifies
 things:
 
 ```java

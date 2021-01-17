@@ -2,6 +2,7 @@ package io.sisu.nng.aio;
 
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
+import io.sisu.nng.Context;
 import io.sisu.nng.Message;
 import io.sisu.nng.Nng;
 import io.sisu.nng.NngException;
@@ -14,12 +15,19 @@ import java.nio.ByteBuffer;
 public class Aio implements AioProxy {
     private final AioPointer aio;
     private AioCallback cb;
+    private Context ctx;
 
     public Aio() throws NngException {
         this(null);
     }
 
-    public Aio(AioCallback cb) throws NngException {
+    public Aio(Context ctx) throws NngException {
+        this(ctx, null);
+    }
+
+    public Aio(Context ctx, AioCallback cb) throws NngException {
+        this.ctx = ctx;
+
         AioPointerByReference ref = new AioPointerByReference();
         final int rv = Nng.lib().nng_aio_alloc(ref, cb, Pointer.NULL);
         if (rv != 0) {
@@ -103,5 +111,20 @@ public class Aio implements AioProxy {
             return new Message(pointer);
         }
         return null;
+    }
+
+    @Override
+    public void recvAsync() {
+        Nng.lib().nng_ctx_recv(ctx.getContextStruct(), aio);
+    }
+
+    @Override
+    public void sendAsync() {
+        Nng.lib().nng_ctx_send(ctx.getContextStruct(), aio);
+    }
+
+    @Override
+    public void sleep(int millis) {
+        Nng.lib().nng_sleep_aio(millis, aio);
     }
 }

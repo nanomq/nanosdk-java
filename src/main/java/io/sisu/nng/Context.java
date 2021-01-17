@@ -1,6 +1,7 @@
 package io.sisu.nng;
 
 import io.sisu.nng.aio.Aio;
+import io.sisu.nng.aio.AioCallback;
 import io.sisu.nng.internal.ContextStruct;
 import io.sisu.nng.internal.NngOptions;
 import io.sisu.nng.internal.SocketStruct;
@@ -16,6 +17,10 @@ public class Context {
     private final Aio aio;
 
     public Context(Socket socket) throws NngException {
+        this(socket, null);
+    }
+
+    public Context(Socket socket, AioCallback callback) throws NngException {
         ContextStruct contextStruct = new ContextStruct();
         SocketStruct.ByValue socketStruct = (SocketStruct.ByValue) socket.getSocketStruct();
 
@@ -24,9 +29,9 @@ public class Context {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
 
-        this.aio = new Aio();
         this.socket = socket;
         this.context = new ContextStruct.ByValue(contextStruct);
+        this.aio = new Aio(this, callback);
     }
 
     public Message receiveMessage() throws NngException {
@@ -67,5 +72,13 @@ public class Context {
             String err = Nng.lib().nng_strerror(rv);
             throw new NngException(err);
         }
+    }
+
+    public void trigger() {
+        aio.sleep(100);
+    }
+
+    public ContextStruct.ByValue getContextStruct() {
+        return context;
     }
 }
