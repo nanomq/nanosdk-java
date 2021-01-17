@@ -134,13 +134,15 @@ public class Message {
             return null;
         }
 
-        final ByteBuffer buffer = ByteBuffer.allocate(body.limit());
+        ByteBuffer buffer = ByteBuffer.allocate(body.limit());
 
         // XXX: naive copy for now...could optimize with chunks later
         while (body.hasRemaining()) {
             buffer.put(body.get());
         }
-        return buffer.flip();
+        buffer.flip();
+
+        return buffer;
     }
 
     public void trim(int len) throws NngException {
