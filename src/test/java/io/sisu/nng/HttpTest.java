@@ -103,12 +103,12 @@ public class HttpTest {
         String result = StandardCharsets.UTF_8.decode(array[0].iov_buf).toString();
         Assertions.assertEquals(hello, result);
 
-        assertOk(Nng.lib().nng_http_res_free(res));
-        assertOk(Nng.lib().nng_http_req_free(req));
-        assertOk(Nng.lib().nng_http_client_free(client));
+        Nng.lib().nng_http_res_free(res);
+        Nng.lib().nng_http_req_free(req);
+        Nng.lib().nng_http_client_free(client);
+
         Nng.lib().nng_http_server_stop(server);
         Nng.lib().nng_http_server_release(server);
-
     }
 
     @Test
@@ -196,9 +196,9 @@ public class HttpTest {
         for (IovStruct iov : array) {
             System.out.println(iov);
         }
-        assertOk(Nng.lib().nng_http_res_free(res));
-        assertOk(Nng.lib().nng_http_req_free(req));
-        assertOk(Nng.lib().nng_http_client_free(client));
+        Nng.lib().nng_http_res_free(res);
+        Nng.lib().nng_http_req_free(req);
+        Nng.lib().nng_http_client_free(client);
     }
 
     @Test

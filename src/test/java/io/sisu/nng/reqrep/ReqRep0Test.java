@@ -107,8 +107,8 @@ public class ReqRep0Test {
         String data = body.getPointer().getString(0, StandardCharsets.UTF_8.name());
         Assertions.assertEquals(payload, data);
 
-        check(lib.nng_msg_free(msg));
-        check(lib.nng_msg_free(msg2));
+        lib.nng_msg_free(msg);
+        lib.nng_msg_free(msg2);
 
         check(lib.nng_close(req));
         check(lib.nng_close(rep));

@@ -84,7 +84,7 @@ public interface NngLibrary extends Library {
     int nng_msg_chop_u64(MessagePointer msg, UInt64 size);
     void nng_msg_clear(MessagePointer msg);
     int nng_msg_dup(MessageByReference dup, MessagePointer orig);
-    int nng_msg_free(MessagePointer msg);
+    void nng_msg_free(MessagePointer msg);
     PipeStruct.ByValue nng_msg_get_pipe(MessagePointer msg);
     int nng_msg_insert(MessagePointer msg, ByteBuffer buf, Size size);
     int nng_msg_insert_u16(MessagePointer msg, ByteBuffer buf, UInt16 size);
@@ -202,7 +202,7 @@ public interface NngLibrary extends Library {
     // URL Object
     // TODO: URL Object
     int nng_url_parse(UrlByReference urlPointer, String rawUrl);
-    int nng_url_free(UrlStruct url);
+    void nng_url_free(UrlStruct url);
 
     // Supplemental API
     // TODO: Are these needed?
@@ -225,7 +225,7 @@ public interface NngLibrary extends Library {
     int nng_http_req_alloc(HttpReqPointerByReference req, UrlStruct url);
     int nng_http_req_copy_data(HttpReqPointer req, ByteBuffer data, Size size);
     int nng_http_req_del_header(HttpReqPointer req, String key);
-    int nng_http_req_free(HttpReqPointer req);
+    void nng_http_req_free(HttpReqPointer req);
     int nng_http_req_get_data(HttpReqPointer req, BodyPointerByReference ref, SizeByReference size);
     String nng_http_req_get_header(HttpReqPointer req, String key);
     String nng_http_req_get_method(HttpReqPointer req);
@@ -243,7 +243,7 @@ public interface NngLibrary extends Library {
     int nng_http_res_alloc_error(HttpResPointerByReference ref, short status);
     int nng_http_res_copy_data(HttpResPointer res, ByteBuffer data, Size size);
     int nng_http_res_del_header(HttpResPointer res, String key);
-    int nng_http_res_free(HttpResPointer res);
+    void nng_http_res_free(HttpResPointer res);
     void nng_http_res_get_data(HttpResPointer res, BodyPointerByReference ref, SizeByReference size);
     String nng_http_res_get_header(HttpResPointer res, String key);
     String nng_http_res_get_reason(HttpResPointer res);
@@ -258,7 +258,7 @@ public interface NngLibrary extends Library {
 
     // ...clients
     int nng_http_client_alloc(HttpClientPointerByReference client, UrlStruct url);
-    int nng_http_client_free(HttpClientPointer client);
+    void nng_http_client_free(HttpClientPointer client);
     void nng_http_client_connect(HttpClientPointer client, AioPointer aio);
 
     // ...servers

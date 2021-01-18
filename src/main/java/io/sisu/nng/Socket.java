@@ -64,10 +64,7 @@ public abstract class Socket {
         int rv = Nng.lib().nng_sendmsg(this.socket, msg.getMessagePointer(), 0);
         if (rv != 0) {
             // failed to send, so free our message before we toss the exception
-            int rvFree = Nng.lib().nng_msg_free(msg.getMessagePointer());
-            if (rvFree != 0) {
-                throw new NngException(Nng.lib().nng_strerror(rvFree));
-            }
+            Nng.lib().nng_msg_free(msg.getMessagePointer());
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
     }

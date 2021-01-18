@@ -19,9 +19,6 @@ public class UrlTest {
         Assertions.assertEquals("80", url.u_port.toString());
         Assertions.assertEquals(null, url.u_fragment.toString());
 
-        rv = Nng.lib().nng_url_free(url);
-        if (rv != 0) {
-            Assertions.fail(Nng.lib().nng_strerror(rv));
-        }
+        Nng.lib().nng_url_free(url);
     }
 }
