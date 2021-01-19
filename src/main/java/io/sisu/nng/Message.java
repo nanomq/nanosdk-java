@@ -8,7 +8,6 @@ import io.sisu.nng.internal.MessageByReference;
 import io.sisu.nng.internal.MessagePointer;
 import io.sisu.nng.internal.jna.Size;
 import io.sisu.nng.internal.jna.UInt16;
-import io.sisu.nng.internal.jna.UInt32;
 import io.sisu.nng.internal.jna.UInt32ByReference;
 
 import java.nio.ByteBuffer;

@@ -28,12 +28,14 @@ public class ContextTest {
 
         Message msg = new Message();
         msg.append("hello");
-        reqCtx.sendMessage(msg);
+        reqCtx.sendMessageSync(msg);
 
-        Message reply = repCtx.receiveMessage();
+        Message reply = repCtx.receiveMessageSync();
         Assertions.assertEquals("hello",
                 Native.toString(reply.getBodyOnHeap().array(), StandardCharsets.UTF_8));
 
+        req.close();
+        rep.close();
     }
 
     @Test
@@ -47,8 +49,8 @@ public class ContextTest {
 
         Context repCtx = new Context(rep);
         repCtx.setReceiveTimeout(50);
-        Assertions.assertThrows(NngException.class, () -> {
-            Message msg = repCtx.receiveMessage();
-        });
+        Assertions.assertThrows(NngException.class, repCtx::receiveMessageSync);
+
+        rep.close();
     }
 }
