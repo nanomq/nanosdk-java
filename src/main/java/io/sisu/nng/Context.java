@@ -65,11 +65,6 @@ public class Context {
         }
 
         @Override
-        public void assertSuccessful() throws NngException {
-            aio.assertSuccessful();
-        }
-
-        @Override
         public void put(String key, Object value) {
             stateMap.put(key, value);
         }
@@ -160,20 +155,16 @@ public class Context {
 
     public CompletableFuture<Message> receiveMessage() {
         CompletableFuture<Object> future = new CompletableFuture<>();
+
+        this.queue.add(new Work(Event.RECV, future));
         Nng.lib().nng_ctx_recv(context, aio.getAioPointer());
-        try {
-            this.queue.add(new Work(Event.RECV, future));
-        } catch (IllegalStateException e) {
-            future.completeExceptionally(e);
-        }
 
         return future.thenApply(obj -> (Message) obj);
     }
 
     public Message receiveMessageSync() throws NngException {
         try {
-            Message msg = receiveMessage().get();
-            return msg;
+            return receiveMessage().get();
         } catch (InterruptedException e) {
             throw  new NngException("interrupted");
         } catch (ExecutionException e) {
@@ -188,16 +179,10 @@ public class Context {
     public CompletableFuture<Void> sendMessage(Message msg) {
         CompletableFuture<Object> future = new CompletableFuture<>();
 
+        this.queue.add(new Work(Event.SEND, future));
         aio.setMessage(msg);
         Nng.lib().nng_ctx_send(context, aio.getAioPointer());
 
-        int rv = aio.getResult();
-        if (rv != 0) {
-            future.completeExceptionally(new NngException(Nng.lib().nng_strerror(rv)));
-        } else {
-            msg.valid = false;
-            this.queue.add(new Work(Event.SEND, future));
-        }
         return future.thenApply((unused) -> null);
     }
 

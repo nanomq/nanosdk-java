@@ -9,9 +9,6 @@ public interface AioProxy {
 
     void assertSuccessful() throws NngException;
 
-    void recvAsync();
-    void sendAsync();
-
     void sleep(int millis);
 
     boolean begin();

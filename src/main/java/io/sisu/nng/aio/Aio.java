@@ -116,16 +116,6 @@ public class Aio implements AioProxy {
     }
 
     @Override
-    public void recvAsync() {
-        Nng.lib().nng_ctx_recv(ctx.getContextStruct(), aio);
-    }
-
-    @Override
-    public void sendAsync() {
-        Nng.lib().nng_ctx_send(ctx.getContextStruct(), aio);
-    }
-
-    @Override
     public void sleep(int millis) {
         Nng.lib().nng_sleep_aio(millis, aio);
     }
