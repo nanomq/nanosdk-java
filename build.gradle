@@ -1,4 +1,5 @@
 plugins {
+    id 'com.github.johnrengelman.shadow' version '6.1.0' apply false
     id 'java'
 }
 
@@ -21,7 +22,9 @@ dependencies {
 }
 
 project(':demo') {
+    apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: 'java'
+
     group = 'io.sisu.nng'
     version = parent.version
 
@@ -31,5 +34,33 @@ project(':demo') {
 
     dependencies {
         implementation rootProject
+    }
+
+    jar {
+        manifest {
+            attributes 'Description': 'Some demonstrations of NNG-Java'
+        }
+    }
+
+    task demoFatJar(type: Jar) {
+        from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+        baseName 'nng-demo-uberjar'
+        with jar
+    }
+
+    task runDemoAsyncServer(type: JavaExec) {
+        group = "Execution"
+        description = "Run the Async Server demo"
+        classpath = sourceSets.main.runtimeClasspath
+        main = $/io.sisu.nng.demo.async.Server/$
+        environment "JNA_LIBRARY_PATH", System.getenv("JNA_LIBRARY_PATH")
+    }
+
+    task runDemoAsyncClient(type: JavaExec) {
+        group = "Execution"
+        description = "Run the Async Client demo"
+        classpath = sourceSets.main.runtimeClasspath
+        main = $/io.sisu.nng.demo.async.Client/$
+        environment "JNA_LIBRARY_PATH", System.getenv("JNA_LIBRARY_PATH")
     }
 }

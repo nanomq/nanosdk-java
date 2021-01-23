@@ -1,6 +1,5 @@
 package io.sisu.nng.internal;
 
-import com.sun.jna.Callback;
 import com.sun.jna.Library;
 import com.sun.jna.Pointer;
 import com.sun.jna.ptr.IntByReference;
@@ -61,7 +60,7 @@ public interface NngLibrary extends Library {
     DialerStruct.ByValue nng_pipe_dialer(PipeStruct.ByValue pipe);
     PipeStruct.ByValue nng_pipe_id(PipeStruct.ByValue pipe);
     ListenerStruct.ByValue nng_pipe_listener(PipeStruct.ByValue pipe);
-    int nng_pipe_notify(SocketStruct.ByValue socket, int pipeEvent, Callback cb, Pointer arg);
+    int nng_pipe_notify(SocketStruct.ByValue socket, int pipeEvent, NngCallback cb, Pointer arg);
     SocketStruct.ByValue nng_pipe_socket(PipeStruct.ByValue pipe);
     int nng_pipe_get(PipeStruct.ByValue pipe, String opt, Pointer value, SizeByReference size);
     int nng_pipe_get_int(PipeStruct.ByValue pipe, String opt, IntByReference value);
@@ -117,11 +116,11 @@ public interface NngLibrary extends Library {
 
     // Asynchronous Operations
     void nng_aio_abort(AioPointer aio, int err);
-    int nng_aio_alloc(AioPointerByReference aiop, Callback cb, Pointer arg);
+    int nng_aio_alloc(AioPointerByReference aiop, NngCallback cb, Pointer arg);
     boolean nng_aio_begin(AioPointer aio);
     void nng_aio_cancel(AioPointer aio);
     int nng_aio_count(AioPointer aio);
-    void nng_aio_defer(AioPointer aio, Callback fn, Pointer arg);
+    void nng_aio_defer(AioPointer aio, NngCallback fn, Pointer arg);
     void nng_aio_finish(AioPointer aio, int err);
     void nng_aio_free(AioPointer aio);
     Pointer nng_aio_get_input(AioPointer aio, int index);

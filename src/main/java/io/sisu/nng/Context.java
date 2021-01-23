@@ -158,7 +158,7 @@ public class Context {
         CompletableFuture<Object> future = new CompletableFuture<>();
         Nng.lib().nng_ctx_recv(context, aio.getAioPointer());
         try {
-            queue.add(new Work(Event.RECV, future));
+            this.queue.add(new Work(Event.RECV, future));
         } catch (IllegalStateException e) {
             future.completeExceptionally(e);
         }
@@ -192,7 +192,7 @@ public class Context {
             future.completeExceptionally(new NngException(Nng.lib().nng_strerror(rv)));
         } else {
             msg.valid = false;
-            queue.add(new Work(Event.SEND, future));
+            this.queue.add(new Work(Event.SEND, future));
         }
         return future.thenApply((unused) -> null);
     }
@@ -211,7 +211,7 @@ public class Context {
 
     public CompletableFuture<Void> sleep(int millis) {
         CompletableFuture<Object> future = new CompletableFuture<>();
-        queue.add(new Work(Event.WAKE, future));
+        this.queue.add(new Work(Event.WAKE, future));
         aio.sleep(millis);
         return future.thenApply((unused) -> null);
     }

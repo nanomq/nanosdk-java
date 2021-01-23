@@ -8,8 +8,57 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ContextTest {
+
+    @Test
+    @Timeout(250)
+    public void simpleHandlerTest() throws NngException {
+        final AtomicInteger cnt = new AtomicInteger(0);
+
+        final String url = String.format("inproc://%s",
+                new Throwable().getStackTrace()[0].getMethodName());
+
+        Socket req = new Req0Socket();
+        Socket rep = new Rep0Socket();
+
+        Context reqCtx = new Context(req);
+        Context repCtx = new Context(rep);
+
+        repCtx.setRecvHandler((contextProxy, message) -> {
+            //Assertions.assertEquals("hello",
+            //        Native.toString(message.getBodyOnHeap().array(), StandardCharsets.UTF_8));
+
+            contextProxy.put("msg", message);
+            contextProxy.sleep(100);
+        });
+        repCtx.setWakeHandler(contextProxy -> {
+            Message msg = (Message) contextProxy.get("msg");
+            contextProxy.send(msg);
+        });
+        repCtx.setSendHandler(contextProxy -> cnt.incrementAndGet());
+
+        rep.listen(url);
+        req.dial(url);
+
+        CompletableFuture<Message> future = repCtx.receiveMessage();
+
+        Message msg = new Message();
+        msg.append("hello");
+        reqCtx.sendMessageSync(msg);
+
+        Message reply = reqCtx.receiveMessageSync();
+        Assertions.assertEquals("hello",
+                Native.toString(reply.getBodyOnHeap().array(), StandardCharsets.UTF_8));
+
+        req.close();
+        rep.close();
+
+        Assertions.assertEquals(1, cnt.get());
+        Assertions.assertTrue(future.isDone());
+    }
 
     @Test
     @Timeout(250)

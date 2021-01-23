@@ -6,10 +6,6 @@ import io.sisu.nng.NngException;
 import io.sisu.nng.Socket;
 import io.sisu.nng.reqrep.Rep0Socket;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
 public class Server {
     private static final int PARALLEL = 12;
     private final String url;
@@ -19,13 +15,13 @@ public class Server {
     }
 
     public void start() throws Exception {
-        Map<Context, CompletableFuture> map = new HashMap<>();
-
         Socket socket = new Rep0Socket();
 
         for (int i=0; i < PARALLEL; i++) {
             Context ctx = new Context(socket);
             ctx.setRecvHandler((proxy, msg) -> {
+                System.out.println(String.format("%s: received message",
+                        Thread.currentThread().getName()));
                 try {
                     int when = msg.trim32Bits();
                     proxy.sleep(when);
@@ -34,8 +30,16 @@ public class Server {
                     proxy.receive();
                 }
             });
-            ctx.setSendHandler((proxy) -> proxy.receive());
-            ctx.setWakeHandler((proxy) -> proxy.send((Message) proxy.get("reply")));
+            ctx.setSendHandler((proxy) -> {
+                System.out.println(String.format("%s: sent message",
+                        Thread.currentThread().getName()));
+                proxy.receive();
+            });
+            ctx.setWakeHandler((proxy) -> {
+                System.out.println(String.format("%s: woke from sleep",
+                        Thread.currentThread().getName()));
+                proxy.send((Message) proxy.get("reply"));
+            });
 
             // initialize context state to RECV
             ctx.receiveMessage();
