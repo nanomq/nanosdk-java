@@ -12,8 +12,7 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -27,7 +26,7 @@ public class Context {
     private final ContextStruct.ByValue context;
     private final Aio aio;
 
-    private final Queue<Work> queue = new ArrayDeque<>();
+    private final BlockingQueue<Work> queue = new ArrayBlockingQueue<>(10);
     private final HashMap<String, Object> stateMap = new HashMap<>();
 
     private final Map<Event, BiConsumer<ContextProxy, Message>> eventHandlers = new HashMap<>();
@@ -88,7 +87,7 @@ public class Context {
 
     private static void dispatch(AioProxy aioProxy, Context ctx) {
         try {
-            Work work = ctx.queue.poll();
+            Work work = ctx.queue.poll(1000, TimeUnit.MILLISECONDS);
             if (work == null) {
                 // XXX: no known work
                 return;
@@ -97,18 +96,21 @@ public class Context {
             try {
                 aioProxy.assertSuccessful();
                 BiConsumer<ContextProxy, Message> consumer = ctx.eventHandlers.getOrDefault(work.event, noop);
+                Object result = null;
 
                 switch (work.event) {
                     case RECV:
-                        Message msg = aioProxy.getMessage();
-                        consumer.accept(ctx.proxy, msg);
-                        work.future.complete(msg);
+                        result = aioProxy.getMessage();
                         break;
                     case SEND:
                     case WAKE:
-                        consumer.accept(ctx.proxy, null);
-                        work.future.complete(null);
                         break;
+                }
+
+                consumer.accept(ctx.proxy, (Message) result);
+
+                if (work.future != null) {
+                    work.future.complete(result);
                 }
             } catch (NngException e) {
                 if (work.future != null) {
@@ -152,6 +154,8 @@ public class Context {
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
+
+        Nng.lib().nng_aio_free(aio.getAioPointer());
     }
 
     public CompletableFuture<Message> receiveMessage() {

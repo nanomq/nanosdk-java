@@ -1,5 +1,6 @@
 package io.sisu.nng.aio;
 
+import com.sun.jna.CallbackThreadInitializer;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import io.sisu.nng.Context;
@@ -29,6 +30,7 @@ public class Aio implements AioProxy {
         this.ctx = ctx;
 
         AioPointerByReference ref = new AioPointerByReference();
+        Native.setCallbackThreadInitializer(cb, new CallbackThreadInitializer(true, false, "AioCallback"));
         final int rv = Nng.lib().nng_aio_alloc(ref, cb, Pointer.NULL);
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));

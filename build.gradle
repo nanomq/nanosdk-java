@@ -42,12 +42,6 @@ project(':demo') {
         }
     }
 
-    task demoFatJar(type: Jar) {
-        from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-        baseName 'nng-demo-uberjar'
-        with jar
-    }
-
     task runDemoAsyncServer(type: JavaExec) {
         group = "Execution"
         description = "Run the Async Server demo"

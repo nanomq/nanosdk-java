@@ -33,8 +33,7 @@ public class Client {
         msg.append(buffer);
 
         sock.sendMessage(msg);
-
-        msg = sock.receiveMessage();
+        sock.receiveMessage();
 
         end = System.currentTimeMillis();
         sock.close();

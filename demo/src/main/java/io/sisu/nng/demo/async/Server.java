@@ -7,7 +7,7 @@ import io.sisu.nng.Socket;
 import io.sisu.nng.reqrep.Rep0Socket;
 
 public class Server {
-    private static final int PARALLEL = 12;
+    private static final int PARALLEL = 128;
     private final String url;
 
     public Server(String url) {
@@ -48,7 +48,7 @@ public class Server {
         socket.listen(this.url);
         System.out.println("Listening on " + this.url);
 
-        Thread.sleep(360000);
+        Thread.sleep(1000 * 60 * 20);
     }
 
     public static void main(String argv[]) {
