@@ -9,6 +9,11 @@ import io.sisu.nng.internal.jna.UInt64;
 
 import java.util.Arrays;
 
+/**
+ * Socket Address Union
+ *
+ * TODO: fix this Uint16 convert nonsense...seems like we should need to use this goofy logic if things are working.
+ */
 public class SockAddr extends Union {
     public UInt16 s_family;
     public Local s_ipc;

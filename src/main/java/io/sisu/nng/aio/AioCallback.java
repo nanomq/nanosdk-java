@@ -14,8 +14,7 @@ public class AioCallback<T> implements NngCallback {
     public T args = null;
     public BiConsumer<AioProxy, T> consumer = (a, b) -> {};
 
-    public AioCallback() {
-    }
+    public AioCallback() { }
 
     public AioCallback(BiConsumer<AioProxy, T> consumer, T args) {
         this.consumer = consumer;

@@ -26,11 +26,7 @@ public class Client {
         start = System.currentTimeMillis();
 
         Message msg = new Message();
-        ByteBuffer buffer = ByteBuffer.allocateDirect(4);
-        buffer.order(ByteOrder.nativeOrder());
-        buffer.putInt(millis);
-        buffer.flip();
-        msg.append(buffer);
+        msg.appendU32(millis);
 
         sock.sendMessage(msg);
         sock.receiveMessage();

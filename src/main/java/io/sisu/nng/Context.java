@@ -129,7 +129,7 @@ public class Context {
 
         this.socket = socket;
         this.context = new ContextStruct.ByValue(contextStruct);
-        this.aio = new Aio(this, new AioCallback<>(Context::dispatch, this));
+        this.aio = new Aio(new AioCallback<>(Context::dispatch, this));
     }
 
     public void setRecvHandler(BiConsumer<ContextProxy, Message> handler) {

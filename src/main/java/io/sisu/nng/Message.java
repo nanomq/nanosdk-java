@@ -6,11 +6,10 @@ import io.sisu.nng.internal.BodyPointer;
 import io.sisu.nng.internal.HeaderPointer;
 import io.sisu.nng.internal.MessageByReference;
 import io.sisu.nng.internal.MessagePointer;
-import io.sisu.nng.internal.jna.Size;
-import io.sisu.nng.internal.jna.UInt16;
-import io.sisu.nng.internal.jna.UInt32ByReference;
+import io.sisu.nng.internal.jna.*;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -84,9 +83,19 @@ public class Message {
         append(s, StandardCharsets.UTF_8);
     }
 
-    public void appendU16(int val) {
-        UInt16 uInt16 = new UInt16(val);
+    public void appendU16(int i) {
+        UInt16 val = new UInt16(i);
+        Nng.lib().nng_msg_append_u16(msg, val);
+    }
 
+    public void appendU32(int i) {
+        UInt32 val = new UInt32(i);
+        Nng.lib().nng_msg_append_u32(msg, val);
+    }
+
+    public void appendU64(int i) {
+        UInt64 val = new UInt64(i);
+        Nng.lib().nng_msg_append_u64(msg, val);
     }
 
     public int getBodyLen() {
@@ -134,6 +143,7 @@ public class Message {
         }
 
         ByteBuffer buffer = ByteBuffer.allocate(body.limit());
+        buffer.order(ByteOrder.nativeOrder());
 
         // XXX: naive copy for now...could optimize with chunks later
         while (body.hasRemaining()) {
@@ -157,6 +167,13 @@ public class Message {
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
-        return ref.getUInt32().convert();
+        return ref.getUInt32().intValue();
+    }
+
+    @Override
+    public void finalize() {
+        if (valid) {
+            Nng.lib().nng_msg_free(msg);
+        }
     }
 }

@@ -76,6 +76,9 @@ public interface NngLibrary extends Library {
     // Messages
     int nng_msg_alloc(MessageByReference msgRef, Size size);
     int nng_msg_append(MessagePointer msg, ByteBuffer buf, Size size);
+    int nng_msg_append_u16(MessagePointer msg, UInt16 val);
+    int nng_msg_append_u32(MessagePointer msg, UInt32 val);
+    int nng_msg_append_u64(MessagePointer msg, UInt64 val);
     BodyPointer nng_msg_body(MessagePointer msg);
     int nng_msg_chop(MessagePointer msg, Size size);
     int nng_msg_chop_u16(MessagePointer msg, UInt16 size);

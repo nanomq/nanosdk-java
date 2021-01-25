@@ -3,10 +3,7 @@ package io.sisu.nng.aio;
 import com.sun.jna.CallbackThreadInitializer;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
-import io.sisu.nng.Context;
-import io.sisu.nng.Message;
-import io.sisu.nng.Nng;
-import io.sisu.nng.NngException;
+import io.sisu.nng.*;
 import io.sisu.nng.internal.AioPointer;
 import io.sisu.nng.internal.AioPointerByReference;
 import io.sisu.nng.internal.MessagePointer;
@@ -16,19 +13,12 @@ import java.nio.ByteBuffer;
 public class Aio implements AioProxy {
     private final AioPointer aio;
     private AioCallback cb;
-    private Context ctx;
 
     public Aio() throws NngException {
         this(null);
     }
 
-    public Aio(Context ctx) throws NngException {
-        this(ctx, null);
-    }
-
-    public Aio(Context ctx, AioCallback cb) throws NngException {
-        this.ctx = ctx;
-
+    public Aio(AioCallback cb) throws NngException {
         AioPointerByReference ref = new AioPointerByReference();
         Native.setCallbackThreadInitializer(cb, new CallbackThreadInitializer(true, false, "AioCallback"));
         final int rv = Nng.lib().nng_aio_alloc(ref, cb, Pointer.NULL);
@@ -118,5 +108,13 @@ public class Aio implements AioProxy {
     @Override
     public void sleep(int millis) {
         Nng.lib().nng_sleep_aio(millis, aio);
+    }
+
+    public void send(Socket socket) {
+        Nng.lib().nng_send_aio(socket.getSocketStruct().byValue(), this.aio);
+    }
+
+    public void receive(Socket socket) {
+        Nng.lib().nng_recv_aio(socket.getSocketStruct().byValue(), this.aio);
     }
 }

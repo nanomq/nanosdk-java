@@ -72,7 +72,7 @@ public class AioTest {
                     Native.toString(msg.getBodyOnHeap().array(), StandardCharsets.UTF_8));
         }, args);
 
-        Aio aio = new Aio(null, cb);
+        Aio aio = new Aio(cb);
         aio.setTimeoutMillis(500);
         Assertions.assertTrue(aio.begin());
 
