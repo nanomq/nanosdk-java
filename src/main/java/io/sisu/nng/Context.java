@@ -8,10 +8,8 @@ import io.sisu.nng.internal.ContextStruct;
 import io.sisu.nng.internal.NngOptions;
 import io.sisu.nng.internal.SocketStruct;
 
-import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -19,7 +17,16 @@ import java.util.function.Consumer;
 /**
  * Wrapper of an NNG context, allowing for multi-threaded use of Sockets.
  *
- * This wrapper is pretty basic at the moment and effectively works synchronously.
+ * Unlike the native NNG context, the Java Context provides a built in event dispatcher for the
+ * common event types (data received, data sent, wake from sleep). While I'm still designing the
+ * high-level API around this, for now there are 3 potential approaches for using a Context:
+ *
+ * 1. Synchronously using sendMessageSync()/recvMessageSync
+ * 2. Asynchronously with CompletableFutures using sendMessage()/recvMessage()
+ * 3. Asynchronously with callbacks via registering event handlers.
+ *
+ * In the 3rd case (event handlers), one must "set the wheels in motion" by performing an initial
+ * asynchronous operation (like via a recvMessage() call).
  */
 public class Context {
     private final Socket socket;

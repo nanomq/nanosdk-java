@@ -6,6 +6,12 @@ import io.sisu.nng.NngException;
 import io.sisu.nng.Socket;
 import io.sisu.nng.reqrep.Rep0Socket;
 
+/**
+ * Java implementation of the NNG async demo server program.
+ *
+ * Unlike the C demo, the Java version uses the asynchronous event handler approach provided via
+ * the io.sisu.nng.Context class.
+ */
 public class Server {
     private static final int PARALLEL = 128;
     private final String url;
@@ -41,7 +47,7 @@ public class Server {
                 proxy.send((Message) proxy.get("reply"));
             });
 
-            // initialize context state to RECV
+            // perform the initial receive operation to start the "event loop"
             ctx.receiveMessage();
         }
 

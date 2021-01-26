@@ -3,21 +3,42 @@ package io.sisu.nng.aio;
 import com.sun.jna.CallbackThreadInitializer;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
-import io.sisu.nng.*;
+import io.sisu.nng.Message;
+import io.sisu.nng.Nng;
+import io.sisu.nng.NngException;
+import io.sisu.nng.Socket;
 import io.sisu.nng.internal.AioPointer;
 import io.sisu.nng.internal.AioPointerByReference;
 import io.sisu.nng.internal.MessagePointer;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Wrapper around NNG's aio (asynchronous io) structure, providing convenience methods and a
+ * callback framework for making use from Java easier.
+ *
+ * In general, most methods are simply wrappers around the native NNG aio functions for manipulating
+ * the aio. However, the introduction of the AioCallback approach provides a Java-friendly way to
+ * provide callback event handlers. @see io.sisu.nng.Context
+ */
 public class Aio implements AioProxy {
     private final AioPointer aio;
     private AioCallback cb;
 
+    /**
+     * Allocate a new NNG aio without a callback.
+     * @throws NngException
+     */
     public Aio() throws NngException {
         this(null);
     }
 
+    /**
+     * Allocate a new NNG aio with the given AioCallback set as the callback entrypoint.
+     *
+     * @param cb an instance of AioCallback for handling events on this aio
+     * @throws NngException if nng_aio_alloc fails
+     */
     public Aio(AioCallback cb) throws NngException {
         AioPointerByReference ref = new AioPointerByReference();
         Native.setCallbackThreadInitializer(cb, new CallbackThreadInitializer(true, false, "AioCallback"));

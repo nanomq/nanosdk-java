@@ -5,9 +5,9 @@ import io.sisu.nng.NngException;
 import io.sisu.nng.Socket;
 import io.sisu.nng.reqrep.Req0Socket;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
+/**
+ * Java implementation of the NNG async demo client program.
+ */
 public class Client {
     private final String url;
     private final int millis;

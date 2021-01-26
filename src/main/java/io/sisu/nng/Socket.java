@@ -11,6 +11,9 @@ import io.sisu.nng.internal.jna.SizeByReference;
 import java.nio.ByteBuffer;
 import java.util.function.Function;
 
+/**
+ * Wrapper around an NNG socket providing a Java api for interacting with the NNG socket functions.
+ */
 public abstract class Socket {
     protected final SocketStruct.ByValue socket;
 
@@ -112,7 +115,7 @@ public abstract class Socket {
     /**
      * Sends raw data over the Socket.
      *
-     * Note: explicitly does NOT support NNG_FLAG_ALLOC option as its assumed the ByteBuffer is
+     * Note: explicitly does NOT support NNG_FLAG_ALLOC option as it's assumed the ByteBuffer is
      * allocated and managed by the JVM.
      * @param data a directly allocated ByteBuffer of data to send
      * @param blockUntilSent boolean flag determining if the call waits until the message is sent,

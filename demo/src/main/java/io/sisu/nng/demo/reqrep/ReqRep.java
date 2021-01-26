@@ -9,13 +9,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Date;
 
 public class ReqRep {
-    static final int DATECMD = 1;
+    static final int DATE_CMD = 1;
 
-    static interface Demoable {
-        public void run() throws NngException;
+    interface Demoable {
+        void run() throws NngException;
     }
 
     static class Server implements Demoable {
@@ -62,7 +61,7 @@ public class ReqRep {
             ByteBuffer buffer = ByteBuffer.allocateDirect(8);
             buffer.order(ByteOrder.nativeOrder());
             buffer.clear();
-            buffer.putInt(DATECMD);
+            buffer.putInt(DATE_CMD);
             buffer.putInt(0); // required for padding to send all 8 bytes for now
             buffer.flip();
 

@@ -23,6 +23,33 @@ In general, only the publicly visible types and functions from the official
 My downline goal is to write my own protocol in an nng extension and use it in
 a Java application...but we'll see if/when I get there.
 
+## Current State
+As of _26 Jan 2021_, a good portion of the core NNG api (sockets, contexts,
+and aio) **are implemented with Java-centric wrapping classes.** This means you
+can:
+
+* instantiate and use `Socket`'s that implement the Scalability Protocols
+* use `Context`'s for multi-threaded use of a single `Socket`
+* use the `Aio` framework in 3 different ways for async operations:
+  1. in blocking (i.e. non-async) manner...the trivial use of a `Context`
+  2. in non-blocking manner using the Java `CompletableFuture` API
+  3. in an event-driver manner using `AioCallback`'s
+    
+> The AIO stuff needs some tire kicking, is a bit messy, and I'm not too happy
+> with it yet. In short, the design lets you keep as much state in the JVM as
+> possible (for callbacks and the like), but seems overly complicated. (Maybe
+> it's just that way because of Java?)
+
+Things **not yet working or implemented**:
+
+* the http client api
+* the http server api
+* stream wrangling
+* TLS support has not been tested
+
+> It's not quite clear how much of the HTTP stuff I want to implement, buf if
+> there's anything required for WebSocket support it will be on the list.
+
 ## Building
 1. I've done nothing (yet) to package nng, so you'll need to build and
    install that yourself. It's really not that hard.
@@ -52,8 +79,13 @@ understanding of nng, but also my use of JNA to expose the library.
 As part of my Java-fication of nng, I'm currently marrying Sockets to their
 protocols explicitly. (Maybe I'll go full on OOP and go overboard here...tbd.)
 
-An [example](src/test/java/io/sisu/nng/Example.java) of how this simplifies
-things:
+For detailed examples, check the [demo](demo/) project. The goal is to provide
+translations of the existing NNG demos into Java versions to illustrate any
+similarities or differences in usage (as well to provide a way to validate if
+the Java implementation is working).
+
+A simple [example](src/test/java/io/sisu/nng/Example.java) of how the Java API
+works:
 
 ```java
 package io.sisu.nng;
