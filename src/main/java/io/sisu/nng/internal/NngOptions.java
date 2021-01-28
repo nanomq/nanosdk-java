@@ -26,4 +26,7 @@ public class NngOptions {
     public static final String SUBSCRIBE = "sub:subscribe";
     public static final String UNSUBSCRIBE = "sub:unsubscribe";
     public static final String PREFER_NEW_ON_FULL = "sub:prefnew";
+
+    // Surveyor Options
+    public static final String SURVEYOR_SURVEYTIME = "surveyor:survey-time";
 }

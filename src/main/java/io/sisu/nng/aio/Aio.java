@@ -23,7 +23,8 @@ import java.nio.ByteBuffer;
  */
 public class Aio implements AioProxy {
     private final AioPointer aio;
-    private AioCallback cb;
+    private final AioPointerByReference pointer;
+    private final AioCallback<?> cb;
 
     /**
      * Allocate a new NNG aio without a callback.
@@ -40,16 +41,16 @@ public class Aio implements AioProxy {
      * @throws NngException if nng_aio_alloc fails
      */
     public Aio(AioCallback cb) throws NngException {
-        AioPointerByReference ref = new AioPointerByReference();
+        this.pointer = new AioPointerByReference();
         Native.setCallbackThreadInitializer(cb, new CallbackThreadInitializer(true, false, "AioCallback"));
-        final int rv = Nng.lib().nng_aio_alloc(ref, cb, Pointer.NULL);
+        final int rv = Nng.lib().nng_aio_alloc(this.pointer, cb, Pointer.NULL);
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
-        this.aio = ref.getAioPointer();
+        this.aio = this.pointer.getAioPointer();
 
+        this.cb = cb;
         if (cb != null) {
-            this.cb = cb;
             this.cb.setAioProxy(this);
         }
     }
@@ -119,8 +120,8 @@ public class Aio implements AioProxy {
 
     @Override
     public Message getMessage() {
-        MessagePointer pointer = Nng.lib().nng_aio_get_msg(aio);
-        if (pointer != null && pointer.getPointer() != Pointer.NULL) {
+        Pointer pointer = Nng.lib().nng_aio_get_msg(aio);
+        if (pointer != null && pointer != Pointer.NULL) {
             return new Message(pointer);
         }
         return null;

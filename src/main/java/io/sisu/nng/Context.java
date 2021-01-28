@@ -31,6 +31,7 @@ import java.util.function.Consumer;
 public class Context {
     private final Socket socket;
     private final ContextStruct.ByValue context;
+    private final AioCallback<?> aioCallback;
     private final Aio aio;
 
     private final BlockingQueue<Work> queue = new ArrayBlockingQueue<>(10);
@@ -136,7 +137,8 @@ public class Context {
 
         this.socket = socket;
         this.context = new ContextStruct.ByValue(contextStruct);
-        this.aio = new Aio(new AioCallback<>(Context::dispatch, this));
+        this.aioCallback = new AioCallback<>(Context::dispatch, this);
+        this.aio = new Aio(aioCallback);
     }
 
     public void setRecvHandler(BiConsumer<ContextProxy, Message> handler) {

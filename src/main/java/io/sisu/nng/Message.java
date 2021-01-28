@@ -51,6 +51,10 @@ public class Message {
         this.msg = pointer;
     }
 
+    public Message(Pointer pointer) {
+        this.msg = new MessagePointer();
+        this.msg.setPointer(pointer);
+    }
 
     public void appendToHeader(ByteBuffer data) throws NngException {
         final int len = data.limit() - data.position();
@@ -203,10 +207,10 @@ public class Message {
         return ref.getUInt32().intValue();
     }
 
-    @Override
-    public void finalize() {
+    public void free() {
         if (valid) {
             Nng.lib().nng_msg_free(msg);
         }
     }
+
 }

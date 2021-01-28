@@ -44,7 +44,7 @@ public interface NngLibrary extends Library {
     int nng_socket_id(SocketStruct.ByValue socket);
 
     // Connection Management - Dialers
-    int nng_dial_close(DialerStruct.ByValue dialer);
+    int nng_dialer_close(DialerStruct.ByValue dialer);
     int nng_dialer_create(DialerStruct dialer, SocketStruct.ByValue socket, String url);
     int nng_dialer_id(DialerStruct.ByValue dialer);
     int nng_dialer_start(DialerStruct.ByValue dialer, int flags);
@@ -127,7 +127,7 @@ public interface NngLibrary extends Library {
     void nng_aio_finish(AioPointer aio, int err);
     void nng_aio_free(AioPointer aio);
     Pointer nng_aio_get_input(AioPointer aio, int index);
-    MessagePointer nng_aio_get_msg(AioPointer aio);
+    Pointer nng_aio_get_msg(AioPointer aio);
     Pointer nng_aio_get_output(AioPointer aio, int index);
     int nng_aio_result(AioPointer aio);
     void nng_aio_set_input(AioPointer aio, int index, Pointer param);
@@ -167,6 +167,7 @@ public interface NngLibrary extends Library {
     int nng_surveyor0_open_raw(SocketStruct socket);
 
     // Transports
+    /*
     int nng_inproc_register();
     int nng_ipc_register();
     int nng_tcp_register();
@@ -174,7 +175,7 @@ public interface NngLibrary extends Library {
     int nng_ws_register();
     int nng_wss_register();
     int nng_zt_register();
-
+*/
     // Protocol Contexts
     int nng_ctx_close(ContextStruct.ByValue context);
     int nng_ctx_id(ContextStruct.ByValue context);
