@@ -8,7 +8,7 @@ import io.sisu.nng.internal.NngLibrary;
 import java.util.Properties;
 
 /**
- * Simple singleton access point. Only works in simple environments where libnng is installed in
+ * Simple singleton access point. Only works in simple environments where nng is installed in
  * standard places.
  *
  * Use either the <pre>jna.library.path</pre> System property or set a <pre>JNA_LIBRARY_PATH</pre>
@@ -22,7 +22,7 @@ public class Nng {
     public static class NngUncaughtExceptionHandler implements Callback.UncaughtExceptionHandler {
         @Override
         public void uncaughtException(Callback c, Throwable e) {
-            System.out.println("AIO Callback exception!");
+            System.err.println("AIOCallback had an unhandled exception. This should not happen!");
             e.printStackTrace(System.err);
         }
     }
@@ -31,6 +31,10 @@ public class Nng {
         Native.setCallbackExceptionHandler(new NngUncaughtExceptionHandler());
     }
 
+    /**
+     * Get a reference to the nng library, registering it if needed.
+     * @return a direct-mapped NngLibrary utilizing native methods
+     */
     public static NngLibrary lib() {
         if (directLibrary == null) {
             checkEnvironmentConfig();
@@ -39,7 +43,11 @@ public class Nng {
         return directLibrary;
     }
 
-    public static NngLibrary oldlib() {
+    /**
+     * To be removed...uses indirect JNA wrapping approaches.
+     * @return
+     */
+    public static NngLibrary indirect() {
         if (library == null) {
             checkEnvironmentConfig();
             library = Native.load("nng", NngLibrary.class);
@@ -47,6 +55,9 @@ public class Nng {
         return library;
     }
 
+    /**
+     * Copy environment settings for JNA into the Java system properties if they don't exist.
+     */
     private static void checkEnvironmentConfig() {
         final Properties props = System.getProperties();
         if (!props.contains("jna.debug_load")) {

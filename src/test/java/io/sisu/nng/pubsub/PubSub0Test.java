@@ -15,7 +15,7 @@ public class PubSub0Test {
         final String url = String.format("inproc://%s",
                 new Throwable().getStackTrace()[0].getMethodName());
 
-        Pub0Socket publisher = new Pub0Socket();
+            Pub0Socket publisher = new Pub0Socket();
 
         Sub0Socket sub1 = new Sub0Socket();
         sub1.setReceiveTimeout(100);
