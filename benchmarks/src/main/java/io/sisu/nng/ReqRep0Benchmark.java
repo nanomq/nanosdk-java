@@ -1,34 +1,33 @@
 package io.sisu.nng;
 
-import io.sisu.nng.aio.Context;
 import io.sisu.nng.pipeline.Pull0Socket;
 import io.sisu.nng.pipeline.Push0Socket;
+import io.sisu.nng.reqrep.Rep0Socket;
+import io.sisu.nng.reqrep.Req0Socket;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-public class PushPull0ContextBenchmark {
+public class ReqRep0Benchmark {
 
-    private static final String url = "inproc://pushpull0benchmark";
+    private static final String url = "inproc://reqpre0benchmark";
     private static final int warmup = 10_000;
-    private static final int iterations = 100_000;
+    private static final int iterations = 500_000;
 
     public static void main(String argv[]) throws NngException, IOException, InterruptedException {
         final BlockingQueue<Boolean> haltQueue = new ArrayBlockingQueue<>(1);
         InputStreamReader reader = new InputStreamReader(System.in);
         BufferedReader bufferedReader = new BufferedReader(reader);
 
-        final Socket client = new Push0Socket();
-        final Socket server = new Pull0Socket();
+        final Socket client = new Req0Socket();
+        final Socket server = new Rep0Socket();
         long warmupStart, warmupStop, benchStart, benchStop;
         long warmupDelta, benchDelta;
 
-        client.setReceiveTimeout(1000);
+        // client.setReceiveTimeout(30 * 1000);
 
         server.listen(url);
         client.dial(url);
@@ -40,7 +39,8 @@ public class PushPull0ContextBenchmark {
         Thread thread = new Thread(() -> {
             try {
                 while (true) {
-                    server.receiveMessage();
+                    Message msg = server.receiveMessage();
+                    server.sendMessage(msg);
                 }
             } catch (Exception e) {
                 System.out.println("Server stopping: " + e.getMessage());
@@ -58,6 +58,7 @@ public class PushPull0ContextBenchmark {
         warmupStart = System.currentTimeMillis();
         for (int i=0; i<warmup; i++) {
             client.sendMessage(new Message());
+            client.receiveMessage();
         }
         warmupStop = System.currentTimeMillis();
         warmupDelta = warmupStop - warmupStart;
@@ -72,11 +73,7 @@ public class PushPull0ContextBenchmark {
         benchStart = System.currentTimeMillis();
         for (int i=0; i<iterations; i++) {
             client.sendMessage(new Message());
-            /*
-            if (i % 1000 == 0) {
-                System.out.println("..." + i);
-            }
-            */
+            client.receiveMessage();
         }
         benchStop = System.currentTimeMillis();
         benchDelta = benchStop - benchStart;

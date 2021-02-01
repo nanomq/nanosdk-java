@@ -1,13 +1,15 @@
-package io.sisu.nng;
+package io.sisu.nng.aio;
 
-import io.sisu.nng.aio.Aio;
-import io.sisu.nng.aio.AioCallback;
-import io.sisu.nng.aio.AioProxy;
-import io.sisu.nng.aio.ContextProxy;
+import io.sisu.nng.Message;
+import io.sisu.nng.Nng;
+import io.sisu.nng.NngException;
+import io.sisu.nng.Socket;
 import io.sisu.nng.internal.ContextStruct;
 import io.sisu.nng.internal.NngOptions;
 import io.sisu.nng.internal.SocketStruct;
 
+import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -31,10 +33,10 @@ import java.util.function.Consumer;
 public class Context {
     private final Socket socket;
     private final ContextStruct.ByValue context;
-    private final AioCallback<?> aioCallback;
-    private final Aio aio;
+    private AioCallback<?> aioCallback;
+    private Aio aio;
 
-    private final BlockingQueue<Work> queue = new ArrayBlockingQueue<>(10);
+    private final BlockingQueue<Work> queue = new LinkedBlockingQueue<>();
     private final HashMap<String, Object> stateMap = new HashMap<>();
 
     private final Map<Event, BiConsumer<ContextProxy, Message>> eventHandlers = new HashMap<>();
@@ -90,9 +92,11 @@ public class Context {
 
     private static void dispatch(AioProxy aioProxy, Context ctx) {
         try {
-            Work work = ctx.queue.poll(1000, TimeUnit.MILLISECONDS);
+            // XXX: to guard against race conditions, we using a poll-based approach in case the
+            // callback fires before the work is added to the queue. (Should only happen if empty.)
+            Work work = ctx.queue.poll(5, TimeUnit.SECONDS);
             if (work == null) {
-                // XXX: no known work
+                // XXX: no known work or queue is cleared because we're closing the Context
                 return;
             }
 
@@ -106,6 +110,7 @@ public class Context {
                         result = aioProxy.getMessage();
                         break;
                     case SEND:
+
                     case WAKE:
                         break;
                 }
@@ -153,13 +158,19 @@ public class Context {
         this.eventHandlers.put(Event.WAKE, (aioProxy, unused) -> handler.accept(aioProxy));
     }
 
+    /**
+     * Close the Context and try to safely release any resources (e.g. the Aio) in advance of
+     * garbage collection.
+     * @throws NngException
+     */
     public void close() throws NngException {
+        queue.clear();
         int rv = Nng.lib().nng_ctx_close(context);
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
-
-        Nng.lib().nng_aio_free(aio.getAioPointer());
+        aio.free();
+        aio = null;
     }
 
     public CompletableFuture<Message> receiveMessage() {
@@ -192,7 +203,10 @@ public class Context {
         aio.setMessage(msg);
         Nng.lib().nng_ctx_send(context, aio.getAioPointer());
 
-        return future.thenApply((unused) -> null);
+        return future.thenApply((unused) -> {
+            msg.setInvalid();
+            return null;
+        });
     }
 
     public void sendMessageSync(Message msg) throws NngException {

@@ -1,6 +1,7 @@
 package io.sisu.nng;
 
 import com.sun.jna.Native;
+import io.sisu.nng.aio.Context;
 import io.sisu.nng.reqrep.Rep0Socket;
 import io.sisu.nng.reqrep.Req0Socket;
 import org.junit.jupiter.api.Assertions;
@@ -9,14 +10,16 @@ import org.junit.jupiter.api.Timeout;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ContextTest {
 
     @Test
     @Timeout(250)
-    public void simpleHandlerTest() throws NngException {
-        final AtomicInteger cnt = new AtomicInteger(0);
+    public void simpleHandlerTest() throws NngException, InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
 
         final String url = String.format("inproc://%s",
                 new Throwable().getStackTrace()[0].getMethodName());
@@ -38,7 +41,7 @@ public class ContextTest {
             Message msg = (Message) contextProxy.get("msg");
             contextProxy.send(msg);
         });
-        repCtx.setSendHandler(contextProxy -> cnt.incrementAndGet());
+        repCtx.setSendHandler(contextProxy -> latch.countDown());
 
         rep.listen(url);
         req.dial(url);
@@ -53,14 +56,14 @@ public class ContextTest {
         Assertions.assertEquals("hello",
                 Native.toString(reply.getBodyOnHeap().array(), StandardCharsets.UTF_8));
 
+        Assertions.assertTrue(latch.await(100, TimeUnit.MILLISECONDS));
+        Assertions.assertTrue(future.isDone());
+
         repCtx.close();
         reqCtx.close();
 
         req.close();
         rep.close();
-
-        Assertions.assertEquals(1, cnt.get());
-        Assertions.assertTrue(future.isDone());
     }
 
     @Test

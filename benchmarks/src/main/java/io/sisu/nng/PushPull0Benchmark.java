@@ -1,22 +1,19 @@
 package io.sisu.nng;
 
-import io.sisu.nng.aio.Context;
 import io.sisu.nng.pipeline.Pull0Socket;
 import io.sisu.nng.pipeline.Push0Socket;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-public class PushPull0ContextBenchmark {
+public class PushPull0Benchmark {
 
     private static final String url = "inproc://pushpull0benchmark";
     private static final int warmup = 10_000;
-    private static final int iterations = 100_000;
+    private static final int iterations = 1_000_000;
 
     public static void main(String argv[]) throws NngException, IOException, InterruptedException {
         final BlockingQueue<Boolean> haltQueue = new ArrayBlockingQueue<>(1);

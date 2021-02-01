@@ -70,6 +70,7 @@ public abstract class Socket {
             Nng.lib().nng_msg_free(msg.getMessagePointer());
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
+        msg.valid = false;
     }
 
     public void sendMessage(Message msg) throws NngException {

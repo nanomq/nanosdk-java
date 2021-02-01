@@ -1,2 +1,4 @@
 rootProject.name = 'nng-java'
 include 'demo'
+include 'benchmarks'
+

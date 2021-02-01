@@ -1,6 +1,6 @@
 package io.sisu.nng.demo.async;
 
-import io.sisu.nng.Context;
+import io.sisu.nng.aio.Context;
 import io.sisu.nng.Message;
 import io.sisu.nng.NngException;
 import io.sisu.nng.Socket;
@@ -10,7 +10,7 @@ import io.sisu.nng.reqrep.Rep0Socket;
  * Java implementation of the NNG async demo server program.
  *
  * Unlike the C demo, the Java version uses the asynchronous event handler approach provided via
- * the io.sisu.nng.Context class.
+ * the io.sisu.nng.aio.Context class.
  */
 public class Server {
     private static final int PARALLEL = 128;

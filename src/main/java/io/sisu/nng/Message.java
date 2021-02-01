@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
  *       memory freed automatically).
  */
 public class Message {
-    protected boolean valid = true;
+    protected boolean valid;
     private MessagePointer msg;
 
     public Message() throws NngException {
@@ -45,15 +45,19 @@ public class Message {
             throw new NngException(err);
         }
         msg = ref.getMessage();
+        valid = true;
     }
 
-    public Message(MessagePointer pointer) {
+    public Message(Pointer pointer) throws NngException {
+        this(new MessagePointer(pointer));
+    }
+
+    public Message(MessagePointer pointer) throws NngException {
+        if (pointer.getPointer() == Pointer.NULL) {
+            throw new NngException("attempt to create a Message from a null Pointer");
+        }
         this.msg = pointer;
-    }
-
-    public Message(Pointer pointer) {
-        this.msg = new MessagePointer();
-        this.msg.setPointer(pointer);
+        this.valid = true;
     }
 
     public void appendToHeader(ByteBuffer data) throws NngException {
@@ -207,10 +211,20 @@ public class Message {
         return ref.getUInt32().intValue();
     }
 
-    public void free() {
-        if (valid) {
-            Nng.lib().nng_msg_free(msg);
-        }
+    protected void free() {
+        Nng.lib().nng_msg_free(msg);
     }
 
+    public void setInvalid() {
+        this.valid = false;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (valid) {
+            // the JVM still owns the Message, try to free it
+            free();
+        }
+    }
 }

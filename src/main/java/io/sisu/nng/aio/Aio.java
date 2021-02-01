@@ -19,12 +19,13 @@ import java.nio.ByteBuffer;
  *
  * In general, most methods are simply wrappers around the native NNG aio functions for manipulating
  * the aio. However, the introduction of the AioCallback approach provides a Java-friendly way to
- * provide callback event handlers. @see io.sisu.nng.Context
+ * provide callback event handlers. @see io.sisu.nng.aio.Context
  */
 public class Aio implements AioProxy {
     private final AioPointer aio;
     private final AioPointerByReference pointer;
-    private final AioCallback<?> cb;
+    private AioCallback<?> cb;
+    private boolean valid = false;
 
     /**
      * Allocate a new NNG aio without a callback.
@@ -48,7 +49,7 @@ public class Aio implements AioProxy {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
         this.aio = this.pointer.getAioPointer();
-
+        this.valid = true;
         this.cb = cb;
         if (cb != null) {
             this.cb.setAioProxy(this);
@@ -121,10 +122,13 @@ public class Aio implements AioProxy {
     @Override
     public Message getMessage() {
         Pointer pointer = Nng.lib().nng_aio_get_msg(aio);
-        if (pointer != null && pointer != Pointer.NULL) {
+
+        // TODO: refactor into Optional<Message>? Throw directly?
+        try {
             return new Message(pointer);
+        } catch (NngException e) {
+            return null;
         }
-        return null;
     }
 
     @Override
@@ -138,5 +142,20 @@ public class Aio implements AioProxy {
 
     public void receive(Socket socket) {
         Nng.lib().nng_recv_aio(socket.getSocketStruct().byValue(), this.aio);
+    }
+
+    protected void free() {
+        if (valid) {
+            System.out.println(String.format("JVM is freeing AIO %s", this));
+            Nng.lib().nng_aio_free(this.aio);
+            valid = false;
+            cb = null;
+        }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        free();
     }
 }

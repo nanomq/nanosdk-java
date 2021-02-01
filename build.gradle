@@ -21,9 +21,35 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 
+project(':benchmarks') {
+    apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'java'
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    group = 'io.sisu.nng'
+    version = parent.version
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        implementation rootProject
+    }
+
+    jar {
+        manifest {
+            attributes 'Description': 'Some (contrived) benchmarks of NNG-Java'
+        }
+    }
+}
+
 project(':demo') {
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: 'java'
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
     group = 'io.sisu.nng'
     version = parent.version
