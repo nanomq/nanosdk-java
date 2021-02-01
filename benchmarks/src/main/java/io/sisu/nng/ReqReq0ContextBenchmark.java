@@ -11,15 +11,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
-public class ReqReqp0ContextBenchmark {
+
+public class ReqReq0ContextBenchmark {
 
     private static final String url = "inproc://reqrep0benchmark";
-    private static final int parallelism = 24;
-    private static final int warmup = 10_000;
-    private static final int iterations = 100_00_000;
+    private static final int parallelism = Integer.parseInt(
+            System.getProperty("NNG_PARALLELISM", "24"));
+    private static final int warmup = 50_000;
+    private static final int iterations = Integer.parseInt(
+            System.getProperty("NNG_ITERATIONS", "10000000"));
 
     private static final AtomicInteger counter = new AtomicInteger(0);
+    private static final AtomicLong benchStart = new AtomicLong(0);
 
     public static void main(String argv[]) throws NngException, IOException, InterruptedException {
         InputStreamReader reader = new InputStreamReader(System.in);
@@ -27,10 +32,10 @@ public class ReqReqp0ContextBenchmark {
 
         final Socket client = new Req0Socket();
         final Socket server = new Rep0Socket();
-        long warmupStart, warmupStop, benchStart, benchStop;
+        long warmupStart, warmupStop, benchStop;
         long warmupDelta, benchDelta;
 
-        //client.setReceiveTimeout(5000);
+        client.setReceiveTimeout(30 * 1000);
 
         server.listen(url);
         client.dial(url);
@@ -46,10 +51,7 @@ public class ReqReqp0ContextBenchmark {
                 ctxProxy.send(msg);
             });
             ctx.setSendHandler(ctxProxy -> {
-                final int cnt = counter.incrementAndGet();
-                if (cnt % 5000 == 0) {
-                    System.out.println("server handled " + cnt);
-                }
+                counter.incrementAndGet();
                 ctx.receiveMessage();
             });
             contexts.add(ctx);
@@ -74,10 +76,34 @@ public class ReqReqp0ContextBenchmark {
                         warmup / (warmupDelta / 1000.0f)));
 
 
+        counter.set(0);
         final int clientCnt = parallelism / 2;
-        final int batchSize = iterations / clientCnt;
+        final int batchSize = iterations > 0 ? iterations / clientCnt : -1;
         System.out.println(String.format("Benchmarking with %d clients, batchSize %d",
                 clientCnt, batchSize));
+
+        // Reporting thread
+        Thread reporter = new Thread(() -> {
+            try {
+                long currentDelta;
+                int cnt;
+                while (true) {
+                    Thread.sleep(15_000);
+                    currentDelta = System.currentTimeMillis() - benchStart.get();
+                    cnt = counter.get();
+                    System.out.println(
+                            String.format("%.2f kilo-messages\t%.2f secs\t%f ops/ms\t%.1f\tmsg/s",
+                                    cnt / 1000.0f,
+                                    currentDelta / 1000.0f,
+                                    cnt / (1.0f * currentDelta),
+                                    cnt / (currentDelta / 1000.0f)));
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        reporter.setDaemon(true);
+        reporter.start();
 
         final CountDownLatch latch = new CountDownLatch(clientCnt);
         for (int i=0; i<clientCnt; i++) {
@@ -97,13 +123,15 @@ public class ReqReqp0ContextBenchmark {
                     latch.countDown();
                 }
             });
+            thread.setDaemon(true);
+            thread.setName("client-" + i);
             thread.start();
         }
 
-        benchStart = System.currentTimeMillis();
+        benchStart.set(System.currentTimeMillis());
         latch.await();
         benchStop = System.currentTimeMillis();
-        benchDelta = benchStop - benchStart;
+        benchDelta = benchStop - benchStart.get();
 
         System.out.println(
                 String.format("Benchmark took %d millis (%f ops/ms) (%.1f msgs/s)",
