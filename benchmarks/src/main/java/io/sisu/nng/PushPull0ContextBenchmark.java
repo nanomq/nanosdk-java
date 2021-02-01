@@ -1,14 +1,11 @@
 package io.sisu.nng;
 
-import io.sisu.nng.aio.Context;
 import io.sisu.nng.pipeline.Pull0Socket;
 import io.sisu.nng.pipeline.Push0Socket;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 

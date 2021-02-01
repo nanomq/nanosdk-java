@@ -8,8 +8,6 @@ import io.sisu.nng.internal.ContextStruct;
 import io.sisu.nng.internal.NngOptions;
 import io.sisu.nng.internal.SocketStruct;
 
-import java.util.Arrays;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;

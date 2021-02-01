@@ -1,9 +1,9 @@
 package io.sisu.nng.demo.async;
 
-import io.sisu.nng.aio.Context;
 import io.sisu.nng.Message;
 import io.sisu.nng.NngException;
 import io.sisu.nng.Socket;
+import io.sisu.nng.aio.Context;
 import io.sisu.nng.reqrep.Rep0Socket;
 
 /**

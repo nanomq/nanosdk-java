@@ -1,7 +1,5 @@
 package io.sisu.nng;
 
-import io.sisu.nng.pipeline.Pull0Socket;
-import io.sisu.nng.pipeline.Push0Socket;
 import io.sisu.nng.reqrep.Rep0Socket;
 import io.sisu.nng.reqrep.Req0Socket;
 

@@ -9,7 +9,6 @@ import io.sisu.nng.NngException;
 import io.sisu.nng.Socket;
 import io.sisu.nng.internal.AioPointer;
 import io.sisu.nng.internal.AioPointerByReference;
-import io.sisu.nng.internal.MessagePointer;
 
 import java.nio.ByteBuffer;
 
