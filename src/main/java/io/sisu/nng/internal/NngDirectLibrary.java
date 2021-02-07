@@ -93,9 +93,9 @@ public class NngDirectLibrary implements NngLibrary {
     public native void nng_msg_free(MessagePointer msg);
     public native PipeStruct.ByValue nng_msg_get_pipe(MessagePointer msg);
     public native int nng_msg_insert(MessagePointer msg, ByteBuffer buf, Size size);
-    public native int nng_msg_insert_u16(MessagePointer msg, ByteBuffer buf, UInt16 size);
-    public native int nng_msg_insert_u32(MessagePointer msg, ByteBuffer buf, UInt32 size);
-    public native int nng_msg_insert_u64(MessagePointer msg, ByteBuffer buf, UInt64 size);
+    public native int nng_msg_insert_u16(MessagePointer msg, UInt16 size);
+    public native int nng_msg_insert_u32(MessagePointer msg, UInt32 size);
+    public native int nng_msg_insert_u64(MessagePointer msg, UInt64 size);
     public native int nng_msg_len(MessagePointer msg);
     public native int nng_msg_realloc(MessagePointer msg, Size size);
     public native int nng_msg_set_pipe(MessagePointer msg, PipeStruct.ByValue pipe);
@@ -288,6 +288,6 @@ public class NngDirectLibrary implements NngLibrary {
     public native int nng_http_server_start(HttpServerPointer server);
     public native void nng_http_server_stop(HttpServerPointer server);
 
-    // XXX: Memtrack
-    public native int nng_memtrack(UInt64ByReference alloc, UInt64ByReference freed);
+    // XXX: Memtrack...requires patch to NNG that tracks memory allocation
+    // public native int nng_memtrack(UInt64ByReference alloc, UInt64ByReference freed);
 }

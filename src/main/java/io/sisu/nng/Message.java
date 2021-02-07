@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *       that the Message is owned by the native NNG layer (and expected to have its backing
  *       memory freed automatically).
  */
-public class Message {
+public class Message implements AutoCloseable {
     //// DANGER
     public static AtomicInteger created = new AtomicInteger(0);
     public static AtomicInteger freed = new AtomicInteger(0);
@@ -133,19 +133,49 @@ public class Message {
         append(s, StandardCharsets.UTF_8);
     }
 
-    public void appendU16(int i) {
+    public void appendU16(int i) throws NngException {
         UInt16 val = new UInt16(i);
-        Nng.lib().nng_msg_append_u16(msg, val);
+        int rv = Nng.lib().nng_msg_append_u16(msg, val);
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
     }
 
-    public void appendU32(int i) {
+    public void appendU32(int i) throws NngException {
         UInt32 val = new UInt32(i);
-        Nng.lib().nng_msg_append_u32(msg, val);
+        int rv = Nng.lib().nng_msg_append_u32(msg, val);
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
     }
 
-    public void appendU64(int i) {
+    public void appendU64(int i) throws NngException {
         UInt64 val = new UInt64(i);
-        Nng.lib().nng_msg_append_u64(msg, val);
+        int rv = Nng.lib().nng_msg_append_u64(msg, val);
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
+    }
+
+    public void insertU16(int i) throws NngException {
+        int rv = Nng.lib().nng_msg_insert_u16(msg, new UInt16(i));
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
+    }
+
+    public void insertU32(int i) throws NngException {
+        int rv = Nng.lib().nng_msg_insert_u32(msg, new UInt32(i));
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
+    }
+
+    public void insertU64(int i) throws NngException {
+        int rv = Nng.lib().nng_msg_insert_u64(msg, new UInt64(i));
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
     }
 
     public int getBodyLen() {
@@ -173,6 +203,12 @@ public class Message {
     /**
      * Returns a native ByteBuffer backed by the message's body data.
      *
+     * XXX: This ByteBuffer is backed by the Body portion of the nng_msg and MUST NOT BE GARBAGE
+     * COLLECTED BEFORE THE MESSAGE ITSELF!
+     *
+     * TODO: this is terribly unsafe and need to be redesigned as put() operations to allow direct
+     * access to the body without ByteBuffers.
+     *
      * @return new native ByteBuffer or an empty ByteBuffer if body length is zero
      */
     public ByteBuffer getBody() {
@@ -195,21 +231,12 @@ public class Message {
      *
      * @return non-native ByteBuffer containing a copy of the message body data
      */
-    public ByteBuffer getBodyOnHeap() {
-        ByteBuffer body = getBody();
-        if (body == null) {
-            // TODO: does this happen? No idea.
-            return null;
-        }
+    public ByteBuffer getBodyCopy() {
+        final int len = getBodyLen();
 
-        ByteBuffer buffer = ByteBuffer.allocate(body.limit());
+        BodyPointer body = Nng.lib().nng_msg_body(msg);
+        ByteBuffer buffer = ByteBuffer.wrap(body.getPointer().getByteArray(0, len));
         buffer.order(ByteOrder.nativeOrder());
-
-        // XXX: naive copy for now...could optimize with chunks later
-        while (body.hasRemaining()) {
-            buffer.put(body.get());
-        }
-        buffer.flip();
 
         return buffer;
     }
@@ -269,4 +296,8 @@ public class Message {
         }
     }
 
+    @Override
+    public void close() {
+        free();
+    }
 }

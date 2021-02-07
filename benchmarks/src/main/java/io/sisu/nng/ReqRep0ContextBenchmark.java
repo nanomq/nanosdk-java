@@ -112,9 +112,9 @@ public class ReqRep0ContextBenchmark {
 
         client.setReceiveTimeout(30 * 1000);
 
-        System.out.println(String.format("Using params: { url: %s, clients: %d, servers: %d, totalMessages : %s, payload size: %d, batchSize: %d }",
+        System.out.println(String.format("Using params: { url: '%s' clients: '%,d', servers: '%,d', totalMessages: '%s', payload size: '%,d', batchSize: '%,d' }",
                 url, clientParallelism, serverParallelism,
-                totalMessages > 0 ? String.valueOf(totalMessages) : "infinite",
+                totalMessages > 0 ? String.format("%,d", totalMessages) : "infinite",
                 numBytes,
                 batchSize));
 
@@ -123,6 +123,7 @@ public class ReqRep0ContextBenchmark {
             for (int i = 0; i < serverParallelism; i++) {
                 Context ctx = new Context(server);
                 ctx.setRecvHandler((ctxProxy, msg) -> {
+                    // no need to discard/free msg since a successful send will do so
                     ctxProxy.send(msg);
                     serverReceived.incrementAndGet();
                 });
@@ -148,7 +149,7 @@ public class ReqRep0ContextBenchmark {
                 Message msg = new Message();
                 msg.append(body.array());
                 client.sendMessage(msg);
-                client.receiveMessage();
+                client.receiveMessage().free();
             }
             warmupStop = System.currentTimeMillis();
             warmupDelta = warmupStop - warmupStart;
@@ -262,9 +263,6 @@ public class ReqRep0ContextBenchmark {
         int msgInvalidated = Message.invalidated.get();
         int msgFreed = Message.freed.get();
 
-        UInt64ByReference allocRef = new UInt64ByReference();
-        UInt64ByReference freedRef = new UInt64ByReference();
-
         // Memory stats
         System.out.println(String.format("Messages: { created: %,d, invalidated: %,d, freed: %,d, delta(created-freed): %,d, delta(created-inval): %,d, delta: %,d }",
                 msgCreated, msgInvalidated, msgFreed,
@@ -277,15 +275,5 @@ public class ReqRep0ContextBenchmark {
 
         System.out.println(String.format("AIO: { created: %,d, freed: %,d, delta: %,d }",
                 aioCreated, aioFreed, aioCreated - aioFreed));
-
-
-        if (Nng.lib().nng_memtrack(allocRef, freedRef) == 0) {
-            long alloc = allocRef.getUInt64().longValue() >> 20;
-            long freed = freedRef.getUInt64().longValue() >> 20;
-            long delta = alloc - freed;
-
-            System.out.println(String.format(":: NNG alloc %d MB freed: %d MB, delta %d MB",
-                    alloc, freed, delta));
-        }
     }
 }

@@ -31,7 +31,7 @@ public class ContextTest {
 
         repCtx.setRecvHandler((contextProxy, message) -> {
             Assertions.assertEquals("hello",
-                    Native.toString(message.getBodyOnHeap().array(), StandardCharsets.UTF_8));
+                    Native.toString(message.getBodyCopy().array(), StandardCharsets.UTF_8));
 
             contextProxy.put("msg", message);
             contextProxy.sleep(100);
@@ -53,7 +53,7 @@ public class ContextTest {
 
         Message reply = reqCtx.receiveMessageSync();
         Assertions.assertEquals("hello",
-                Native.toString(reply.getBodyOnHeap().array(), StandardCharsets.UTF_8));
+                Native.toString(reply.getBodyCopy().array(), StandardCharsets.UTF_8));
 
         Assertions.assertTrue(latch.await(100, TimeUnit.MILLISECONDS));
         Assertions.assertTrue(future.isDone());
@@ -86,7 +86,7 @@ public class ContextTest {
 
         Message reply = repCtx.receiveMessageSync();
         Assertions.assertEquals("hello",
-                Native.toString(reply.getBodyOnHeap().array(), StandardCharsets.UTF_8));
+                Native.toString(reply.getBodyCopy().array(), StandardCharsets.UTF_8));
 
         req.close();
         rep.close();

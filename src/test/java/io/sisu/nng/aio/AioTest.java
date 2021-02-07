@@ -69,7 +69,7 @@ public class AioTest {
             Assertions.assertNotNull(msg);
 
             Assertions.assertEquals("aio message",
-                    Native.toString(msg.getBodyOnHeap().array(), StandardCharsets.UTF_8));
+                    Native.toString(msg.getBodyCopy().array(), StandardCharsets.UTF_8));
         }, args);
 
         Aio aio = new Aio(cb);

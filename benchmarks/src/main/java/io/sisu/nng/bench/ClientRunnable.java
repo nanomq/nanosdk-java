@@ -53,6 +53,7 @@ public class ClientRunnable implements Runnable {
                 ctx.setRecvHandler(((contextProxy, message) -> {
                     latch.countDown();
                     onRecv.accept(message.getBodyLen());
+                    message.free();
                     try {
                         ctx.sendMessage(newMessage());
                     } catch (NngException e) {

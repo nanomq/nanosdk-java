@@ -1,6 +1,5 @@
 package io.sisu.nng.pubsub;
 
-import com.sun.jna.Native;
 import io.sisu.nng.Message;
 import io.sisu.nng.NngException;
 import org.junit.jupiter.api.Assertions;
@@ -41,12 +40,12 @@ public class PubSub0Test {
         Message sub1Message = sub1.receiveMessage();
         Assertions.assertArrayEquals(
                 "topic1\0yankees win!".getBytes(StandardCharsets.UTF_8),
-                sub1Message.getBodyOnHeap().array());
+                sub1Message.getBodyCopy().array());
 
         Message sub2Message = sub2.receiveMessage();
         Assertions.assertArrayEquals(
                 "topic1\0yankees win!".getBytes(StandardCharsets.UTF_8),
-                sub2Message.getBodyOnHeap().array());
+                sub2Message.getBodyCopy().array());
 
         Message topic2Message = new Message();
         topic2Message.append("topic2\0");
@@ -56,7 +55,7 @@ public class PubSub0Test {
         sub1Message = sub1.receiveMessage();
         Assertions.assertArrayEquals(
                 "topic2\0dinner is served".getBytes(StandardCharsets.UTF_8),
-                sub1Message.getBodyOnHeap().array());
+                sub1Message.getBodyCopy().array());
 
         Assertions.assertTimeout(Duration.ofMillis(200), () -> {
             Assertions.assertThrows(NngException.class, sub1::receiveMessage);

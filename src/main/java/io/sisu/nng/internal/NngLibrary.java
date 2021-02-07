@@ -92,9 +92,9 @@ public interface NngLibrary extends Library {
     void nng_msg_free(MessagePointer msg);
     PipeStruct.ByValue nng_msg_get_pipe(MessagePointer msg);
     int nng_msg_insert(MessagePointer msg, ByteBuffer buf, Size size);
-    int nng_msg_insert_u16(MessagePointer msg, ByteBuffer buf, UInt16 size);
-    int nng_msg_insert_u32(MessagePointer msg, ByteBuffer buf, UInt32 size);
-    int nng_msg_insert_u64(MessagePointer msg, ByteBuffer buf, UInt64 size);
+    int nng_msg_insert_u16(MessagePointer msg, UInt16 size);
+    int nng_msg_insert_u32(MessagePointer msg, UInt32 size);
+    int nng_msg_insert_u64(MessagePointer msg, UInt64 size);
     int nng_msg_len(MessagePointer msg);
     int nng_msg_realloc(MessagePointer msg, Size size);
     int nng_msg_set_pipe(MessagePointer msg, PipeStruct.ByValue pipe);
@@ -282,6 +282,6 @@ public interface NngLibrary extends Library {
     int nng_http_server_start(HttpServerPointer server);
     void nng_http_server_stop(HttpServerPointer server);
 
-    // XXX Memtrack
-    int nng_memtrack(UInt64ByReference alloc, UInt64ByReference freed);
+    // XXX Memtrack...requires patch for NNG to track memory allocation
+    // int nng_memtrack(UInt64ByReference alloc, UInt64ByReference freed);
 }
