@@ -1,6 +1,5 @@
 package io.sisu.nng;
 
-import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import io.sisu.nng.internal.BodyPointer;
 import io.sisu.nng.internal.HeaderPointer;
@@ -12,6 +11,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Wraps the native NNG message structure and provides convenience methods for ferrying data to and
@@ -24,7 +25,13 @@ import java.nio.charset.StandardCharsets;
  *       memory freed automatically).
  */
 public class Message {
-    protected boolean valid;
+    //// DANGER
+    public static AtomicInteger created = new AtomicInteger(0);
+    public static AtomicInteger freed = new AtomicInteger(0);
+    public static AtomicInteger invalidated = new AtomicInteger(0);
+    public static AtomicInteger invalidatedAtTimeOfFreeing = new AtomicInteger(0);
+
+    protected AtomicBoolean valid = new AtomicBoolean(false);
     private MessagePointer msg;
 
     public Message() throws NngException {
@@ -45,7 +52,8 @@ public class Message {
             throw new NngException(err);
         }
         msg = ref.getMessage();
-        valid = true;
+        valid.set(true);
+        created.incrementAndGet();
     }
 
     public Message(Pointer pointer) throws NngException {
@@ -57,7 +65,8 @@ public class Message {
             throw new NngException("attempt to create a Message from a null Pointer");
         }
         this.msg = pointer;
-        this.valid = true;
+        valid.set(true);
+        created.incrementAndGet();
     }
 
     public void appendToHeader(ByteBuffer data) throws NngException {
@@ -80,23 +89,33 @@ public class Message {
         return msg;
     }
 
-    public boolean isValid() {
-        return valid;
+    public void append(Pointer p, int size) throws NngException {
+        int rv = Nng.lib().nng_msg_append(msg, p, new Size(size));
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
     }
 
     public void append(ByteBuffer data) throws NngException {
-        final int len = data.limit() - data.position();
-        int rv = Nng.lib().nng_msg_append(msg, data, new Size(len));
+        final int rv;
+
+        if (data.hasArray()) {
+            byte[] buf = data.slice().array();
+            rv = Nng.lib().nng_msg_append(msg, buf, buf.length);
+        } else {
+            rv = Nng.lib().nng_msg_append(msg, data,
+                    new Size(data.limit() - data.position()));
+        }
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
     }
 
     public void append(byte[] data) throws NngException {
-        final ByteBuffer buffer = ByteBuffer.allocateDirect(data.length);
-        buffer.put(data);
-        buffer.flip();
-        append(buffer);
+        int rv = Nng.lib().nng_msg_append(msg, data, data.length);
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
     }
 
     /**
@@ -107,7 +126,7 @@ public class Message {
      * @throws NngException if the call to nng_msg_append fails
      */
     public void append(String s, Charset charset) throws NngException {
-        append(Native.toByteArray(s, charset));
+        append(s.getBytes(charset));
     }
 
     public void append(String s) throws NngException {
@@ -211,20 +230,43 @@ public class Message {
         return ref.getUInt32().intValue();
     }
 
-    protected void free() {
-        Nng.lib().nng_msg_free(msg);
+    public void free() {
+        if (valid.compareAndSet(true, false)) {
+            // System.out.println("JVM freeing Message " + this);
+            Nng.lib().nng_msg_free(msg);
+            freed.incrementAndGet();
+            invalidatedAtTimeOfFreeing.incrementAndGet();
+        }
+    }
+
+    /**
+     * Set the Message state back to valid.
+     *
+     * XXX: this API is in flux, is dangerous, and shouldn't be used publicly yet.
+     */
+    public void setValid() {
+        if (valid.compareAndSet(false, true)) {
+            invalidated.decrementAndGet();
+        }
     }
 
     public void setInvalid() {
-        this.valid = false;
+        if (valid.compareAndSet(true, false)) {
+            invalidated.incrementAndGet();
+        }
+    }
+
+    public boolean isValid() {
+        return valid.get();
     }
 
     @Override
     protected void finalize() throws Throwable {
-        super.finalize();
-        if (valid) {
-            // the JVM still owns the Message, try to free it
+        try {
             free();
+        } finally {
+            super.finalize();
         }
     }
+
 }

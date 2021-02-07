@@ -51,6 +51,7 @@ public class AioCallback<T> implements NngCallback {
         } catch (Exception e) {
             // TODO: What, if anything? Think about this.
             System.err.println(e.getMessage());
+            e.printStackTrace(System.err);
         }
     }
 

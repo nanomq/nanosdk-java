@@ -12,7 +12,7 @@ public class UInt64 extends IntegerType {
         this(value, true);
     }
     public UInt64(long value, boolean unsigned) {
-        super(4, value, unsigned);
+        super(8, value, unsigned);
     }
 
     public long convert() {

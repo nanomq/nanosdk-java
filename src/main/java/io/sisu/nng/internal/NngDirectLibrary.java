@@ -6,6 +6,7 @@ import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 import io.sisu.nng.internal.jna.*;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 public class NngDirectLibrary implements NngLibrary {
@@ -76,7 +77,9 @@ public class NngDirectLibrary implements NngLibrary {
 
     // Messages
     public native int nng_msg_alloc(MessageByReference msgRef, Size size);
-    public native int nng_msg_append(MessagePointer msg, ByteBuffer buf, Size size);
+    public native int nng_msg_append(MessagePointer msg, Pointer buf, Size size);
+    public native int nng_msg_append(MessagePointer msg, Buffer buf, Size size);
+    public native int nng_msg_append(MessagePointer msg, byte[] buf, int size);
     public native int nng_msg_append_u16(MessagePointer msg, UInt16 val);
     public native int nng_msg_append_u32(MessagePointer msg, UInt32 val);
     public native int nng_msg_append_u64(MessagePointer msg, UInt64 val);
@@ -284,4 +287,7 @@ public class NngDirectLibrary implements NngLibrary {
     //todo: more
     public native int nng_http_server_start(HttpServerPointer server);
     public native void nng_http_server_stop(HttpServerPointer server);
+
+    // XXX: Memtrack
+    public native int nng_memtrack(UInt64ByReference alloc, UInt64ByReference freed);
 }

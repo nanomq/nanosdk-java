@@ -6,6 +6,7 @@ import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 import io.sisu.nng.internal.jna.*;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
@@ -75,7 +76,9 @@ public interface NngLibrary extends Library {
 
     // Messages
     int nng_msg_alloc(MessageByReference msgRef, Size size);
-    int nng_msg_append(MessagePointer msg, ByteBuffer buf, Size size);
+    int nng_msg_append(MessagePointer msg, Pointer p, Size size);
+    int nng_msg_append(MessagePointer msg, Buffer buf, Size size);
+    int nng_msg_append(MessagePointer msg, byte[] buf, int size);
     int nng_msg_append_u16(MessagePointer msg, UInt16 val);
     int nng_msg_append_u32(MessagePointer msg, UInt32 val);
     int nng_msg_append_u64(MessagePointer msg, UInt64 val);
@@ -105,6 +108,7 @@ public interface NngLibrary extends Library {
     // Message Header Handling
     HeaderPointer nng_msg_header(MessagePointer msg);
     int nng_msg_header_append(MessagePointer msg, ByteBuffer buf, Size size);
+    //int nng_msg_header_append(MessagePointer msg, byte[] buf, int size);
     int nng_msg_header_chop(MessagePointer msg, Size size);
     int nng_msg_header_chop_u16(MessagePointer msg, UInt16 size);
     int nng_msg_header_chop_u32(MessagePointer msg, UInt32 size);
@@ -278,4 +282,6 @@ public interface NngLibrary extends Library {
     int nng_http_server_start(HttpServerPointer server);
     void nng_http_server_stop(HttpServerPointer server);
 
+    // XXX Memtrack
+    int nng_memtrack(UInt64ByReference alloc, UInt64ByReference freed);
 }

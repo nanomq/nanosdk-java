@@ -14,7 +14,7 @@ import java.util.function.Function;
 /**
  * Wrapper around an NNG socket providing a Java api for interacting with the NNG socket functions.
  */
-public abstract class Socket {
+public abstract class Socket implements AutoCloseable {
     protected final SocketStruct.ByValue socket;
 
     protected Socket(Function<SocketStruct, Integer> socketOpener) throws NngException {
@@ -70,16 +70,17 @@ public abstract class Socket {
             Nng.lib().nng_msg_free(msg.getMessagePointer());
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
-        msg.valid = false;
+        msg.valid.set(true);
     }
 
     public void sendMessage(Message msg) throws NngException {
-        if (msg.isValid()) {
+        if (msg.valid.compareAndSet(true, false)) {
             int rv = Nng.lib().nng_sendmsg(this.socket, msg.getMessagePointer(), 0);
             if (rv != 0) {
+                // failed to send, need to flag that it's still valid memory
+                msg.valid.set(true);
                 throw new NngException(Nng.lib().nng_strerror(rv));
             }
-            msg.valid = false;
         } else {
             throw new NngException("Message state is invalid");
         }
@@ -187,4 +188,5 @@ public abstract class Socket {
     public SocketStruct getSocketStruct() {
         return socket;
     }
+
 }

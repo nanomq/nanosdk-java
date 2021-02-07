@@ -32,28 +32,30 @@ public class PubSub0Test {
         sub2.dial(url);
 
         Message topic1Message = new Message();
-        topic1Message.append("topic1");
+        // the "topic" appears as some number of bytes at the start of the Message body and is
+        // terminated by a NUL byte
+        topic1Message.append("topic1\0");
         topic1Message.append("yankees win!");
         publisher.sendMessage(topic1Message);
 
         Message sub1Message = sub1.receiveMessage();
         Assertions.assertArrayEquals(
-                Native.toByteArray("topic1\0yankees win!", StandardCharsets.UTF_8),
+                "topic1\0yankees win!".getBytes(StandardCharsets.UTF_8),
                 sub1Message.getBodyOnHeap().array());
 
         Message sub2Message = sub2.receiveMessage();
         Assertions.assertArrayEquals(
-                Native.toByteArray("topic1\0yankees win!", StandardCharsets.UTF_8),
+                "topic1\0yankees win!".getBytes(StandardCharsets.UTF_8),
                 sub2Message.getBodyOnHeap().array());
 
         Message topic2Message = new Message();
-        topic2Message.append("topic2");
+        topic2Message.append("topic2\0");
         topic2Message.append("dinner is served");
         publisher.sendMessage(topic2Message);
 
         sub1Message = sub1.receiveMessage();
         Assertions.assertArrayEquals(
-                Native.toByteArray("topic2\0dinner is served", StandardCharsets.UTF_8),
+                "topic2\0dinner is served".getBytes(StandardCharsets.UTF_8),
                 sub1Message.getBodyOnHeap().array());
 
         Assertions.assertTimeout(Duration.ofMillis(200), () -> {

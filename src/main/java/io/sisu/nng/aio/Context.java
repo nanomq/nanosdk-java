@@ -28,7 +28,7 @@ import java.util.function.Consumer;
  * In the 3rd case (event handlers), one must "set the wheels in motion" by performing an initial
  * asynchronous operation (like via a recvMessage() call).
  */
-public class Context {
+public class Context implements AutoCloseable {
     private final Socket socket;
     private final ContextStruct.ByValue context;
     private AioCallback<?> aioCallback;
@@ -49,6 +49,7 @@ public class Context {
     public static class Work {
         public final Event event;
         public final CompletableFuture<Object> future;
+        public Message msg = null;
 
         public Work(Event event, CompletableFuture<Object> future) {
             this.event = event;
@@ -108,9 +109,11 @@ public class Context {
                         result = aioProxy.getMessage();
                         break;
                     case SEND:
-
+                        // fallthrough
                     case WAKE:
                         break;
+                    default:
+                        System.err.println("Unexpected event type: " + work.event);
                 }
 
                 consumer.accept(ctx.proxy, (Message) result);
@@ -119,12 +122,18 @@ public class Context {
                     work.future.complete(result);
                 }
             } catch (NngException e) {
+                // if we were sending and failed, we still own the message
+                if (work.msg != null) {
+                    work.msg.setValid();
+                }
+
                 if (work.future != null) {
                     work.future.completeExceptionally(e);
                 }
             }
 
         } catch (Exception e) {
+            // We don't get specific yet on parsing failure types
             e.printStackTrace();
         }
     }
@@ -168,7 +177,6 @@ public class Context {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
         aio.free();
-        aio = null;
     }
 
     public CompletableFuture<Message> receiveMessage() {
@@ -197,14 +205,15 @@ public class Context {
     public CompletableFuture<Void> sendMessage(Message msg) {
         CompletableFuture<Object> future = new CompletableFuture<>();
 
-        this.queue.add(new Work(Event.SEND, future));
+        Work work = new Work(Event.SEND, future);
+        work.msg = msg;
+        this.queue.add(work);
+
+        msg.setInvalid();
         aio.setMessage(msg);
         Nng.lib().nng_ctx_send(context, aio.getAioPointer());
 
-        return future.thenApply((unused) -> {
-            msg.setInvalid();
-            return null;
-        });
+        return future.thenApply((unused) -> null);
     }
 
     public void sendMessageSync(Message msg) throws NngException {
@@ -245,4 +254,12 @@ public class Context {
     public ContextStruct.ByValue getContextStruct() {
         return context;
     }
+
+    /*
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        System.out.println("JVM freeing Context " + this);
+    }
+    */
 }

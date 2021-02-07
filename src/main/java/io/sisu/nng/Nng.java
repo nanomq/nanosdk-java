@@ -27,9 +27,7 @@ public class Nng {
         }
     }
 
-    static {
-        Native.setCallbackExceptionHandler(new NngUncaughtExceptionHandler());
-    }
+    public static final NngUncaughtExceptionHandler exceptionHandler = new NngUncaughtExceptionHandler();
 
     /**
      * Get a reference to the nng library, registering it if needed.

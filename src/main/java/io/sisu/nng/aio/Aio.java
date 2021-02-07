@@ -11,6 +11,8 @@ import io.sisu.nng.internal.AioPointer;
 import io.sisu.nng.internal.AioPointerByReference;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Wrapper around NNG's aio (asynchronous io) structure, providing convenience methods and a
@@ -21,10 +23,16 @@ import java.nio.ByteBuffer;
  * provide callback event handlers. @see io.sisu.nng.aio.Context
  */
 public class Aio implements AioProxy {
+    //// DANGER
+    public static AtomicInteger created = new AtomicInteger(0);
+    public static AtomicInteger freed = new AtomicInteger(0);
+    public static AtomicInteger invalidated = new AtomicInteger(0);
+    public static AtomicInteger invalidatedAtTimeOfFreeing = new AtomicInteger(0);
+
     private final AioPointer aio;
     private final AioPointerByReference pointer;
     private AioCallback<?> cb;
-    private boolean valid = false;
+    private AtomicBoolean valid = new AtomicBoolean(false);
 
     /**
      * Allocate a new NNG aio without a callback.
@@ -43,16 +51,19 @@ public class Aio implements AioProxy {
     public Aio(AioCallback cb) throws NngException {
         this.pointer = new AioPointerByReference();
         Native.setCallbackThreadInitializer(cb, new CallbackThreadInitializer(true, false, "AioCallback"));
+        Native.setCallbackExceptionHandler(Nng.exceptionHandler);
+
         final int rv = Nng.lib().nng_aio_alloc(this.pointer, cb, Pointer.NULL);
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
         this.aio = this.pointer.getAioPointer();
-        this.valid = true;
+        this.valid.set(true);
         this.cb = cb;
         if (cb != null) {
             this.cb.setAioProxy(this);
         }
+        created.incrementAndGet();
     }
 
     public void setOutput(int index, ByteBuffer buffer) {
@@ -144,17 +155,11 @@ public class Aio implements AioProxy {
     }
 
     protected void free() {
-        if (valid) {
-            System.out.println(String.format("JVM is freeing AIO %s", this));
+        if (valid.compareAndSet(true, false)) {
+            // System.out.println(String.format("JVM is freeing AIO %s", this));
             Nng.lib().nng_aio_free(this.aio);
-            valid = false;
-            cb = null;
+            freed.incrementAndGet();
+            invalidatedAtTimeOfFreeing.incrementAndGet();
         }
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        free();
     }
 }
