@@ -44,8 +44,6 @@ jobs:
       run: chmod +x gradlew
     
     - name: Build with Gradle
-      run: ./gradlew build
-    - name: Run tests with Gradle
       env:
         LD_LIBRARY_PATH: ${{github.workspace}}/build
-      run: ./gradlew test
+      run: ./gradlew build
