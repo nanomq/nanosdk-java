@@ -1,40 +1,38 @@
 # nng-java
 
-An experiment of wrapping [nng](https://nng.nanomsg.org) using 
+An idiomatic Java wrapper around [nng](https://nng.nanomsg.org) using 
 [JNA](https://github.com/java-native-access/jna).
 
 ## Goals
-1. Wrap nng in a way that can be used "naturally" via Java idioms so I can
+1. Wrap nng in a way that can be used "naturally" via Java idioms so users can
    quickly spin up sockets, dial/listen, and send/receive data without all the
    pomp and circumstance seen in the C code (because Java has enough pomp and
-   circumstance to deal with, amiright).
+   circumstance to deal with, _amiright_).
 2. Keep the wrapping (via JNA) at just the public API surface allowing it to
    track releases that might have internal (i.e. nni_*) changes only.
 3. Use a (somewhat) strong typing using JNA's extensible type system to keep
    usage of the library somewhat safe from memory issues.
-
-In general, only the publicly visible types and functions from the official
-[man page](https://nng.nanomsg.org/man/v1.3.2) should be accessible.
-
-> This last part is important...it should allow for easier upgrades and avoid
-> dealing with all the internal (nni_*) data structures that JNAerator would
-> expose if I took the code-generator route.
-
-My downline goal is to write my own protocol in an nng extension and use it in
-a Java application...but we'll see if/when I get there.
+4. On the topic of memory issues, provide guardrails around protecting the
+   native memory managed by nng from Java's garbage collector.
+5. Lastly, provide all the scalability constructs from nng (e.g. Aio) in a way
+   that let's Java developers utilize nng's performance and thread safety.
+   
+> My downline goal is to write my own protocol in an nng extension and use it in
+> a Java application...but we'll see if/when I get there.
 
 ## Current State
-As of _26 Jan 2021_, a good portion of the core NNG api (sockets, contexts,
-and aio) **are implemented with Java-centric wrapping classes.** This means you
-can:
+As of _8 Feb 2021_, the core nng primitives are implemented allowing a Java
+developer to:
 
-* instantiate and use `Socket`'s that implement the Scalability Protocols
-* use `Context`'s for multi-threaded use of a single `Socket`
+* instantiate and use `Socket`'s that implement the _Scalability Protocols_
+* use `Context`'s for multi-threaded, async use of a single `Socket`
 * use the `Aio` framework in 3 different ways for async operations:
   1. in blocking (i.e. non-async) manner...the trivial use of a `Context`
   2. in non-blocking manner using the Java `CompletableFuture` API
-  3. in an event-driver manner using `AioCallback`'s
-    
+  3. in an event-driver manner using `AioCallback`s
+* allocated `Message`s without worrying too much about memory management in
+  some simpler cases
+  
 > The AIO stuff needs some tire kicking, is a bit messy, and I'm not too happy
 > with it yet. In short, the design lets you keep as much state in the JVM as
 > possible (for callbacks and the like), but seems overly complicated. (Maybe
@@ -68,14 +66,15 @@ correct location:
 > Note: The Java Property will override any value set in the environment
 
 ### Using the native API
-Most of the nng api is accessible via the `io.sisu.nng.Nng` instance of the
-`io.sisu.nng.internal.NngLibrary`. Everything you need for low-level usage
-should be in the `io.sisu.nng.internal` namespace.
+In general, most users should only need to utilize classes in the 
+`io.sisu.nng` and `io.sisu.nng.aio` namespaces. The direct calling of the nng
+api should be wrapped for you.
 
-See the unit tests for examples as they exist primarily to validate both my
-understanding of nng, but also my use of JNA to expose the library.
+For those looking to do low-level nng programming, most of the nng api is
+accessible via `io.sisu.nng.Nng`. Everything you need for low-level usage
+should be in the `io.sisu.nng.internal` namespace, with a few exceptions.
 
-### Using the Java version
+### The Java NNG API
 As part of my Java-fication of nng, I'm currently marrying Sockets to their
 protocols explicitly. (Maybe I'll go full on OOP and go overboard here...tbd.)
 
@@ -121,9 +120,96 @@ class Example {
 }
 ```
 
-## Random Q's and Thoughts
-- Wrapping by hand (as opposed to using a code generator like
-  [JNAerator](https://github.com/nativelibs4java/JNAerator) is pretty easy
-  given the design of nng.
-- Not clear yet what parts are needed vs. not (e.g. supplemental).
-- Versioning...makes sense to track the supported NNG version? Not sure.
+And a simple example of using a `Context` for asynchronous operations:
+
+```java
+package io.sisu.nng.demo.async;
+
+import io.sisu.nng.*;
+
+/**
+ * Java implementation of the NNG async demo server program.
+ *
+ * Unlike the C demo, the Java version uses the asynchronous event handler approach provided via
+ * the io.sisu.nng.aio.Context class.
+ */
+public class Server {
+    private static final int PARALLEL = 128;
+    private final String url;
+
+    public Server(String url) {
+        this.url = url;
+    }
+
+    public void start() throws Exception {
+        Socket socket = new Rep0Socket();
+
+        for (int i=0; i < PARALLEL; i++) {
+            Context ctx = new Context(socket);
+            ctx.setRecvHandler((proxy, msg) -> {
+                System.out.println(String.format("%s: received message",
+                        Thread.currentThread().getName()));
+                try {
+                    int when = msg.trim32Bits();
+                    proxy.sleep(when);
+                    proxy.put("reply", msg);
+                } catch (NngException e) {
+                    proxy.receive();
+                }
+            });
+            ctx.setSendHandler((proxy) -> {
+                System.out.println(String.format("%s: sent message",
+                        Thread.currentThread().getName()));
+                proxy.receive();
+            });
+            ctx.setWakeHandler((proxy) -> {
+                System.out.println(String.format("%s: woke from sleep",
+                        Thread.currentThread().getName()));
+                proxy.send((Message) proxy.get("reply"));
+            });
+
+            // perform the initial receive operation to start the "event loop"
+            ctx.receiveMessage();
+        }
+
+        socket.listen(this.url);
+        System.out.println("Listening on " + this.url);
+
+        Thread.sleep(1000 * 60 * 20);
+    }
+
+    public static void main(String argv[]) {
+        if (argv.length != 1) {
+            System.err.println(String.format("Usage: server <url>"));
+            System.exit(1);
+        }
+
+        Server server = new Server(argv[0]);
+
+        try {
+            server.start();
+        } catch (Exception e) {
+            System.err.println(e);
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+## About Memory Management and Safety
+Currently, the bare minimum to safely allocate/free native memory for nng
+constructs exists, but it's not optimal in preventing things like native heap
+fragmentation if a developer just lets the JVM garbage collect `Message`s and
+call the message's `free()` method.
+
+While it will probably only occur in long-running, server-based applications,
+using the tire-kicking [benchmarks](./benchmarks) project it's been observed
+that services running that allocate hundreds of megabytes or gigabytes of
+messages via the Java api that _do not manually call `free()` and rely on the
+garbage collector_ will experience excessive memory pressure as nng_msg
+objects stay allocated on the native heap, causing it to grow, and leading to
+fragmentation that is not recoverable.
+
+> tl;dr: if you know you're done with a `Message`, just call `free()` for now.
+
+
