@@ -238,7 +238,8 @@ public class Context implements AutoCloseable {
     /**
      * Close the Context and try to safely release any resources (e.g. the Aio) in advance of
      * garbage collection.
-     * @throws NngException
+     *
+     * @throws NngException on error closing the Context
      */
     public void close() throws NngException {
         queue.clear();
@@ -345,7 +346,7 @@ public class Context implements AutoCloseable {
      * Sleep the Context for the given duration, triggering the Wake handler upon timeout.
      *
      * @param millis number of milliseconds to sleep
-     * @return
+     * @return a CompletableFuture that completes upon the wake event concluding or an error
      */
     public CompletableFuture<Void> sleep(int millis) {
         CompletableFuture<Object> future = new CompletableFuture<>();

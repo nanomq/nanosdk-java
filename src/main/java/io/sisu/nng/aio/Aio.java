@@ -43,7 +43,7 @@ public class Aio implements AioProxy {
 
     /**
      * Allocate a new Aio with a no-op callback.
-     * @throws NngException
+     * @throws NngException if allocation fails
      */
     public Aio() throws NngException {
         this(null);
@@ -214,7 +214,7 @@ public class Aio implements AioProxy {
 
     /**
      * Perform an asynchronous receiving operation on the given Socket.
-     * @param socket
+     * @param socket the {@link Socket} to attempt the receive operation on
      */
     public void receive(Socket socket) {
         Nng.lib().nng_recv_aio(socket.getSocketStruct().byValue(), this.aio);

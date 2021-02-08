@@ -79,7 +79,7 @@ public abstract class Socket implements AutoCloseable {
     /**
      * Send a new Message using the provided ByteBuffer for the message body
      *
-     * @param buffer
+     * @param buffer a ByteBuffer containing the message body
      * @throws NngException
      */
     public void sendMessage(ByteBuffer buffer) throws NngException {
@@ -94,13 +94,7 @@ public abstract class Socket implements AutoCloseable {
             msg.appendToHeader(header);
         }
 
-        int rv = Nng.lib().nng_sendmsg(this.socket, msg.getMessagePointer(), 0);
-        if (rv != 0) {
-            // failed to send, so free our message before we toss the exception
-            Nng.lib().nng_msg_free(msg.getMessagePointer());
-            throw new NngException(Nng.lib().nng_strerror(rv));
-        }
-        msg.valid.set(true);
+        sendMessage(msg);
     }
 
     /**
@@ -108,7 +102,8 @@ public abstract class Socket implements AutoCloseable {
      * taken and enqueued the Message, invalidate it.
      *
      * @param msg the Message to send
-     * @throws NngException
+     * @throws NngException if the socket raised an error when accepting the messaging for sending
+     * @throws IllegalStateException if the Message state is invalid
      */
     public void sendMessage(Message msg) throws NngException {
         if (msg.valid.compareAndSet(true, false)) {
@@ -119,7 +114,7 @@ public abstract class Socket implements AutoCloseable {
                 throw new NngException(Nng.lib().nng_strerror(rv));
             }
         } else {
-            throw new NngException("Message state is invalid");
+            throw new IllegalStateException("Message state is invalid");
         }
     }
 
@@ -127,7 +122,7 @@ public abstract class Socket implements AutoCloseable {
      * Attempt to receive a Message on the Socket.
      *
      * @return the received Message, owned now by the JVM
-     * @throws NngException
+     * @throws NngException if the Socket raises an error on receiving
      */
     public Message receiveMessage() throws NngException {
         return receiveMessage(0);
@@ -146,7 +141,7 @@ public abstract class Socket implements AutoCloseable {
      * Dial the given url
      *
      * @param url a valid nng url as a String
-     * @throws NngException
+     * @throws NngException on an invalid url or failure to connect
      */
     public void dial(String url) throws NngException {
         // TODO: simple api for now
@@ -160,7 +155,7 @@ public abstract class Socket implements AutoCloseable {
      * Listen for connections on the given url
      *
      * @param url a valid nng url as a String
-     * @throws NngException
+     * @throws NngException on an invalid url or failure to listen
      */
     public void listen(String url) throws NngException {
         int rv = Nng.lib().nng_listen(this.socket, url, Pointer.NULL, 0);
@@ -173,7 +168,8 @@ public abstract class Socket implements AutoCloseable {
      * Sends raw data over the Socket.
      *
      * Note: explicitly does NOT support NNG_FLAG_ALLOC option as it's assumed the ByteBuffer is
-     * allocated and managed by the JVM.
+     * allocated and managed by the JVM and will not be freed by the call to nng_send.
+     *
      * @param data a directly allocated ByteBuffer of data to send
      * @param blockUntilSent boolean flag determining if the caller waits until the message is
      *                       accepted for sending by the Socket
@@ -191,17 +187,23 @@ public abstract class Socket implements AutoCloseable {
         }
     }
 
+    /**
+     * Send raw data over a {@link Socket}
+     *
+     * @param data a {@link ByteBuffer} containing the data to send
+     * @throws NngException on error sending the data
+     */
     public void send(ByteBuffer data) throws NngException {
         send(data, true);
     }
 
     /**
-     * Receives raw data on the Socket.
+     * Receives raw data on the Socket into a {@link ByteBuffer}
      *
      * Note: Currently does not support NNG_FLAG_ALLOC, forcing the caller to own and manage the
      * lifetime of the provided ByteBuffer
      *
-     * @param buffer A direct ByteBuffer to receive data into
+     * @param buffer the ByteBuffer to receive data into
      * @param blockUntilReceived boolean flag determining if the call waits until the message is
      *                           received or returns immediately
      * @return long number of bytes received
@@ -210,10 +212,6 @@ public abstract class Socket implements AutoCloseable {
      */
     public long receive(ByteBuffer buffer, boolean blockUntilReceived)
             throws NngException, IllegalArgumentException {
-        if (!buffer.isDirect()) {
-            throw new IllegalArgumentException("ByteBuffer provided is not directly allocated");
-        }
-
         int flags = blockUntilReceived ? 0 : NngFlags.NONBLOCK;
 
         // We're not using ALLOC mode for now, so we need to provide the address of our Size
@@ -234,7 +232,7 @@ public abstract class Socket implements AutoCloseable {
     }
 
     /**
-     * Receive a raw message into the provided direct ByteBuffer, blocking until data is received
+     * Receive a raw message into the provided {@link ByteBuffer}, blocking until data is received
      * or a timeout occurs.
      *
      * @param buffer a direct ByteBuffer

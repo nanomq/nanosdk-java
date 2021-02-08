@@ -15,14 +15,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * <p>
  * Wraps the native NNG message structure and provides convenience methods for ferrying data to and
  * from the JVM.
- *
+ * </p>
+ * <p>
  * Note: Per NNG's design, Message's may change "ownership" when being sent, which is a paradigm
  *       not native to Java. The <i>valid</i> flag is designed to indicate if it's safe to
  *       continue mutating the Message in the JVM (<i>valid: true</i>) or if it's expected
  *       that the Message is owned by the native NNG layer (and expected to have its backing
  *       memory freed automatically).
+ * </p>
  */
 public class Message implements AutoCloseable {
 
@@ -40,7 +43,8 @@ public class Message implements AutoCloseable {
 
     /**
      * Allocate a new Message with a 0-byte Body
-     * @throws NngException
+     *
+     * @throws NngException if failed to allocate a new Message
      */
     public Message() throws NngException {
         this(0);
@@ -77,6 +81,13 @@ public class Message implements AutoCloseable {
         created.incrementAndGet();
     }
 
+    /**
+     * Append data from a {@link ByteBuffer} to the header of the Message, increasing the allocation
+     * for the header if required.
+     *
+     * @param data the ByteBuffer with the data
+     * @throws NngException on failure to append
+     */
     public void appendToHeader(ByteBuffer data) throws NngException {
         final int len = data.limit() - data.position();
         int rv = Nng.lib().nng_msg_header_append(msg, data, new Size(len));
@@ -85,6 +96,15 @@ public class Message implements AutoCloseable {
         }
     }
 
+    /**
+     * Insert data from a {@link ByteBuffer} to the front of the header of the Message.
+     * <p>
+     * Note: the insertion does not occur "at a position" and will prepend the data. If looking to
+     * flip specific bits in the existing header, use {@link #getHeader()} and manipulate it.
+     *
+     * @param data the ByteBuffer with the data
+     * @throws NngException on failure to append
+     */
     public void insertToHeader(ByteBuffer data) throws NngException {
         final int len = data.limit() - data.position();
         int rv = Nng.lib().nng_msg_header_insert(msg, data, new Size(len));
@@ -104,9 +124,19 @@ public class Message implements AutoCloseable {
         }
     }
 
+    /**
+     * Append data from the given {@link ByteBuffer} to the body of the Message, reallocating if
+     * necessary.
+     *
+     * @param data the ByteBuffer with the data for appending
+     * @throws NngException on failure to append
+     */
     public void append(ByteBuffer data) throws NngException {
         final int rv;
 
+        // XXX: until benchmarking is performed, trying two different approaches:
+        // a) for indirect ByteBuffers, use the byte[] primitive interface
+        // b) for direct, use the ByteBuffer interface
         if (data.hasArray()) {
             byte[] buf = data.slice().array();
             rv = Nng.lib().nng_msg_append(msg, buf, buf.length);
@@ -119,6 +149,12 @@ public class Message implements AutoCloseable {
         }
     }
 
+    /**
+     * Append the given byte array to the body of the Message
+     *
+     * @param data an array of bytes to append
+     * @throws NngException on error
+     */
     public void append(byte[] data) throws NngException {
         int rv = Nng.lib().nng_msg_append(msg, data, data.length);
         if (rv != 0) {
@@ -128,6 +164,8 @@ public class Message implements AutoCloseable {
 
     /**
      * Convenience method for appending a Java String to the Message body using the given Charset.
+     * <p>
+     * Similar to using {@link String#getBytes(Charset)} and {@link #append(byte[])}
      *
      * @param s the String to append
      * @param charset the charset used for interpreting the String
@@ -137,10 +175,22 @@ public class Message implements AutoCloseable {
         append(s.getBytes(charset));
     }
 
+    /**
+     * Convenience method for appending a Java String to the Message body, assuming UTF-8 encoding.
+     *
+     * @param s the String to append
+     * @throws NngException on error appending
+     */
     public void append(String s) throws NngException {
         append(s, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Append an unsigned, 16-bit number in network byte order to the Message's body
+     *
+     * @param i the number to append
+     * @throws NngException on error
+     */
     public void appendU16(int i) throws NngException {
         UInt16 val = new UInt16(i);
         int rv = Nng.lib().nng_msg_append_u16(msg, val);
@@ -149,6 +199,12 @@ public class Message implements AutoCloseable {
         }
     }
 
+    /**
+     * Append an unsigned, 32-bit number in network byte order to the Message's body
+     *
+     * @param i the number to append
+     * @throws NngException on error
+     */
     public void appendU32(int i) throws NngException {
         UInt32 val = new UInt32(i);
         int rv = Nng.lib().nng_msg_append_u32(msg, val);
@@ -157,7 +213,13 @@ public class Message implements AutoCloseable {
         }
     }
 
-    public void appendU64(int i) throws NngException {
+    /**
+     * Append an unsigned, 64-bit number in network byte order to the Message's body
+     *
+     * @param i the number to append
+     * @throws NngException on error
+     */
+    public void appendU64(long i) throws NngException {
         UInt64 val = new UInt64(i);
         int rv = Nng.lib().nng_msg_append_u64(msg, val);
         if (rv != 0) {
@@ -165,6 +227,12 @@ public class Message implements AutoCloseable {
         }
     }
 
+    /**
+     * Prepends an unsigned, 16-bit number in network byte order to the Message's body
+     *
+     * @param i the number to append
+     * @throws NngException on error
+     */
     public void insertU16(int i) throws NngException {
         int rv = Nng.lib().nng_msg_insert_u16(msg, new UInt16(i));
         if (rv != 0) {
@@ -172,6 +240,12 @@ public class Message implements AutoCloseable {
         }
     }
 
+    /**
+     * Prepends an unsigned, 32-bit number in network byte order to the Message's body
+     *
+     * @param i the number to append
+     * @throws NngException on error
+     */
     public void insertU32(int i) throws NngException {
         int rv = Nng.lib().nng_msg_insert_u32(msg, new UInt32(i));
         if (rv != 0) {
@@ -179,21 +253,53 @@ public class Message implements AutoCloseable {
         }
     }
 
-    public void insertU64(int i) throws NngException {
+    /**
+     * Prepends an unsigned, 64-bit number in network byte order to the Message's body
+     *
+     * @param i the number to append
+     * @throws NngException on error
+     */
+    public void insertU64(long i) throws NngException {
         int rv = Nng.lib().nng_msg_insert_u64(msg, new UInt64(i));
         if (rv != 0) {
             throw new NngException(Nng.lib().nng_strerror(rv));
         }
     }
 
+    /**
+     * Get the current length of the Message's body in bytes.
+     * <p>
+     * Gives a measurement from native memory performed by the nng_body_len api call.
+     *
+     * @return size of the body in number of bytes
+     */
     public int getBodyLen() {
         return Nng.lib().nng_msg_len(msg);
     }
 
+    /**
+     * Get the current length of the Message's header in bytes.
+     * <p>
+     * Gives a measurement from native memory performed by the nng_header_len api call.
+     *
+     * @return size of the header in number of bytes
+     */
     public int getHeaderLen() {
         return Nng.lib().nng_msg_header_len(msg);
     }
 
+    /**
+     * Get a reference to the Message's header as a direct {@link ByteBuffer}, allowing for
+     * read/write access.
+     * <p>
+     * <b>Caution!:</b> this method exists for now until a safer API can be implemented. You will
+     * have direct access to native memory for the header. No safety net is provided. You must
+     * prevent this ByteBuffer from being garbage collected before the Message is invalidated or
+     * freed.
+     *
+     * @return a direct ByteBuffer accessing the header on success, or a zero-byte ByteBuffer on
+     * error
+     */
     public ByteBuffer getHeader() {
         int len = getHeaderLen();
         if (len == 0) {
@@ -210,12 +316,11 @@ public class Message implements AutoCloseable {
 
     /**
      * Returns a native ByteBuffer backed by the message's body data.
-     *
-     * XXX: This ByteBuffer is backed by the Body portion of the nng_msg and MUST NOT BE GARBAGE
-     * COLLECTED BEFORE THE MESSAGE ITSELF!
-     *
-     * TODO: this is terribly unsafe and need to be redesigned as put() operations to allow direct
-     * access to the body without ByteBuffers.
+     * <p>
+     * <b>Caution!:</b> this method exists for now until a safer API can be implemented. You will
+     * have direct access to native memory for the body. No safety net is provided. You must
+     * prevent this ByteBuffer from being garbage collected before the Message is invalidated or
+     * freed.
      *
      * @return new native ByteBuffer or an empty ByteBuffer if body length is zero
      */
@@ -230,6 +335,7 @@ public class Message implements AutoCloseable {
             // TODO: when does NNG return null here? is that possible?
             return null;
         }
+
         return body.getPointer().getByteBuffer(0, len);
     }
 
@@ -249,6 +355,12 @@ public class Message implements AutoCloseable {
         return buffer;
     }
 
+    /**
+     * Removes bytes from the start of the Message body.
+     *
+     * @param len number of bytes to remove
+     * @throws NngException on error
+     */
     public void trim(int len) throws NngException {
         int rv = Nng.lib().nng_msg_trim(msg, new Size(len));
         if (rv != 0) {
@@ -256,6 +368,11 @@ public class Message implements AutoCloseable {
         }
     }
 
+    /**
+     * Removes 32 bits from the start of the Message body, returning then in network byte order.
+     *
+     * @throws NngException on error
+     */
     public int trim32Bits() throws NngException {
         UInt32ByReference ref = new UInt32ByReference();
         int rv = Nng.lib().nng_msg_trim_u32(msg, ref);
@@ -319,8 +436,10 @@ public class Message implements AutoCloseable {
 
     /**
      * Cleanup the Message, attempting to free it if required.
+     * <p>
+     * TODO: replace with the {@link jdk.internal.ref.Cleaner} api
      *
-     * @throws Throwable
+     * @throws Throwable only if the super's finalize throws an error
      */
     @Override
     protected void finalize() throws Throwable {

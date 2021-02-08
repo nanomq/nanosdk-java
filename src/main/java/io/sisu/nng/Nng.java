@@ -42,18 +42,6 @@ public class Nng {
     }
 
     /**
-     * To be removed...uses indirect JNA wrapping approaches.
-     * @return
-     */
-    public static NngLibrary indirect() {
-        if (library == null) {
-            checkEnvironmentConfig();
-            library = Native.load("nng", NngLibrary.class);
-        }
-        return library;
-    }
-
-    /**
      * Copy environment settings for JNA into the Java system properties if they don't exist.
      */
     private static void checkEnvironmentConfig() {

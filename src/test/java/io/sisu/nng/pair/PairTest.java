@@ -76,14 +76,13 @@ public class PairTest {
             pairB.dial(url);
 
             final String hello = "Hello from B!";
-            ByteBuffer data = ByteBuffer.wrap(Native.toByteArray(hello, StandardCharsets.UTF_8));
+            ByteBuffer data = ByteBuffer.wrap(hello.getBytes(StandardCharsets.UTF_8));
             pairB.send(data);
 
-            // XXX: C "strings" have null terminator bonus byte
-            ByteBuffer buffer = ByteBuffer.allocateDirect(data.limit()+1);
+            ByteBuffer buffer = ByteBuffer.allocate(data.limit());
             long n = pairA.receive(buffer);
 
-            Assertions.assertEquals(hello.length() + 1, n);
+            Assertions.assertEquals(hello.length(), n);
             byte[] response = new byte[buffer.limit()];
             buffer.get(response);
             Assertions.assertEquals(hello, Native.toString(response, StandardCharsets.UTF_8));
