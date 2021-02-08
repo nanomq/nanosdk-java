@@ -1,4 +1,5 @@
 # nng-java
+![Java CI for Unit Tests](https://github.com/voutilad/nng-java/workflows/Java%20CI%20for%20Unit%20Tests/badge.svg?event=push)
 
 An idiomatic Java wrapper around [nng](https://nng.nanomsg.org) using 
 [JNA](https://github.com/java-native-access/jna).
