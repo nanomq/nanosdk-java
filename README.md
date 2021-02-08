@@ -120,12 +120,18 @@ class Example {
 }
 ```
 
-And a simple example of using a `Context` for asynchronous operations:
+And a simple example of using a `Context` for asynchronous operations that is
+the Java analog to nng's async 
+[server.c](https://github.com/nanomsg/nng/blob/master/demo/async/server.c)
+demo code:
 
 ```java
 package io.sisu.nng.demo.async;
 
 import io.sisu.nng.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Java implementation of the NNG async demo server program.
@@ -142,40 +148,33 @@ public class Server {
     }
 
     public void start() throws Exception {
-        Socket socket = new Rep0Socket();
+        try (Socket socket = new Rep0Socket()) {
+            // keep Context references to prevent any possible gc
+            List<Context> contexts = new ArrayList<>(PARALLEL);
 
-        for (int i=0; i < PARALLEL; i++) {
-            Context ctx = new Context(socket);
-            ctx.setRecvHandler((proxy, msg) -> {
-                System.out.println(String.format("%s: received message",
-                        Thread.currentThread().getName()));
-                try {
-                    int when = msg.trim32Bits();
-                    proxy.sleep(when);
-                    proxy.put("reply", msg);
-                } catch (NngException e) {
-                    proxy.receive();
-                }
-            });
-            ctx.setSendHandler((proxy) -> {
-                System.out.println(String.format("%s: sent message",
-                        Thread.currentThread().getName()));
-                proxy.receive();
-            });
-            ctx.setWakeHandler((proxy) -> {
-                System.out.println(String.format("%s: woke from sleep",
-                        Thread.currentThread().getName()));
-                proxy.send((Message) proxy.get("reply"));
-            });
+            for (int i = 0; i < PARALLEL; i++) {
+                Context ctx = new Context(socket);
+                ctx.setRecvHandler((ctxProxy, msg) -> {
+                    try {
+                        int when = msg.trim32Bits();
+                        ctxProxy.sleep(when);
+                        ctxProxy.put("reply", msg);
+                    } catch (NngException e) {
+                        ctxProxy.receive();
+                    }
+                });
+                ctx.setSendHandler((ctxProxy) -> ctxProxy.receive());
+                ctx.setWakeHandler((ctxProxy) -> ctxProxy.send((Message) ctxProxy.get("reply")));
 
-            // perform the initial receive operation to start the "event loop"
-            ctx.receiveMessage();
+                // perform the initial receive operation to start the "event loop"
+                ctx.receiveMessage();
+            }
+
+            socket.listen(this.url);
+            System.out.println("Listening on " + this.url);
+
+            Thread.sleep(1000 * 60 * 20);
         }
-
-        socket.listen(this.url);
-        System.out.println("Listening on " + this.url);
-
-        Thread.sleep(1000 * 60 * 20);
     }
 
     public static void main(String argv[]) {
@@ -185,7 +184,6 @@ public class Server {
         }
 
         Server server = new Server(argv[0]);
-
         try {
             server.start();
         } catch (Exception e) {
@@ -195,6 +193,12 @@ public class Server {
     }
 }
 ```
+
+> Note: you'll notice the above uses the baked in event handling capabilities
+> in the `Context` class. For a more like-for-like example, see the "raw" demo
+> in the [demos](./demos) project that shows how to use your own `AioCallback`
+> to make a like-for-like version of the nng
+> [raw.c](https://github.com/nanomsg/nng/blob/master/demo/raw/raw.c) demo.
 
 ## About Memory Management and Safety
 Currently, the bare minimum to safely allocate/free native memory for nng
