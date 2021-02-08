@@ -34,6 +34,9 @@ jobs:
     - name: build nng
       working-directory: ${{github.workspace}}/build
       run: ninja
+    - name: install nng
+      working-directory: ${{github.worksapce}}/build
+      run: sudo ninja install && sudo ldconfig -v
       
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
@@ -43,7 +46,5 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     
-    - name: Build with Gradle
-      env:
-        LD_LIBRARY_PATH: ${{github.workspace}}/build
-      run: ./gradlew build
+    - name: Test with Gradle
+      run: ./gradlew test
