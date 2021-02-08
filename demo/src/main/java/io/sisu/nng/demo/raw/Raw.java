@@ -117,7 +117,7 @@ public class Raw {
         }
     }
 
-    public static void main(String argv[]) throws Exception {
+    public static void main(String[] argv) throws Exception {
         if (argv.length != 2) {
             System.err.println("Usage: raw <url> [-s|<secs>]");
             return;

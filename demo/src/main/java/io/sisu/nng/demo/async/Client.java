@@ -33,7 +33,7 @@ public class Client {
         }
     }
 
-    public static void main(String argv[]) {
+    public static void main(String[] argv) {
         if (argv.length != 2) {
             System.err.println(String.format("Usage: client <url> <msecs>"));
             System.exit(1);

@@ -15,7 +15,7 @@ public class PushPull0Benchmark {
     private static final int warmup = 10_000;
     private static final int iterations = 1_000_000;
 
-    public static void main(String argv[]) throws NngException, IOException, InterruptedException {
+    public static void main(String[] argv) throws NngException, IOException, InterruptedException {
         final BlockingQueue<Boolean> haltQueue = new ArrayBlockingQueue<>(1);
         InputStreamReader reader = new InputStreamReader(System.in);
         BufferedReader bufferedReader = new BufferedReader(reader);

@@ -85,7 +85,7 @@ public class ReqRep0ContextBenchmark {
                 .addShutdownHook(new Thread(() -> ReqRep0ContextBenchmark.printAllocAccounting()));
     }
 
-    public static void main(String argv[]) throws NngException, IOException, InterruptedException, TimeoutException, ExecutionException {
+    public static void main(String[] argv) throws NngException, IOException, InterruptedException, TimeoutException, ExecutionException {
         InputStreamReader reader = new InputStreamReader(System.in);
         BufferedReader bufferedReader = new BufferedReader(reader);
 

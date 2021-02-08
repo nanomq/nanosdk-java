@@ -177,7 +177,7 @@ public class Server {
         }
     }
 
-    public static void main(String argv[]) {
+    public static void main(String[] argv) {
         if (argv.length != 1) {
             System.err.println(String.format("Usage: server <url>"));
             System.exit(1);
