@@ -30,7 +30,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: ninja
     - name: install nng
-      working-directory: ${{github.worksapce}}/build
+      working-directory: ${{github.workspace}}/build
       run: sudo ninja install
     - name: update ldconfig
       run: sudo ldconfig
