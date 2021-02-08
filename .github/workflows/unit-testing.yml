@@ -3,11 +3,7 @@
 
 name: Java CI for Unit Tests
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -25,10 +21,9 @@ jobs:
       run: wget "https://github.com/nanomsg/nng/archive/v${NNG_VERSION}.tar.gz"
     - name: unpack nng
       run: tar xvfz "v${NNG_VERSION}.tar.gz"
-    - name: make cmake build dir
+    - name: make nng build dir
       run: cmake -E make_directory ${{github.workspace}}/build
     - name: configure cmake
-      shell: bash
       working-directory: ${{github.workspace}}/build
       run: cmake "${GITHUB_WORKSPACE}/nng-${NNG_VERSION}" -DBUILD_SHARED_LIBS=yes -G Ninja
     - name: build nng
@@ -36,8 +31,11 @@ jobs:
       run: ninja
     - name: install nng
       working-directory: ${{github.worksapce}}/build
-      run: sudo ninja install && sudo ldconfig -v
-      
+      run: sudo ninja install
+    - name: update ldconfig
+      run: sudo ldconfig
+#TODO: cache results of building nng
+
     - uses: actions/checkout@v2
     - name: Set up JDK 1.8
       uses: actions/setup-java@v1
