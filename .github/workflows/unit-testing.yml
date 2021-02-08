@@ -30,7 +30,7 @@ jobs:
     - name: configure cmake
       shell: bash
       working-directory: ${{github.workspace}}/build
-      run: cmake "${GITHUB_WORKSAPCE}/nng" -DBUILD_SHARED_LIBS=yes -G Ninja
+      run: cmake "${GITHUB_WORKSPACE}/nng" -DBUILD_SHARED_LIBS=yes -G Ninja
     - name: build nng
       working-directory: ${{github.workspace}}/build
       run: ninja
