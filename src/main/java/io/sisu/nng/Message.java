@@ -19,21 +19,29 @@ import java.util.concurrent.atomic.AtomicInteger;
  * from the JVM.
  *
  * Note: Per NNG's design, Message's may change "ownership" when being sent, which is a paradigm
- *       not native to Java. The <pre>valid</pre> flag is designed to indicate if it's safe to
- *       continue mutating the Message in the JVM (<pre>valid = true</pre>) or if it's expected
+ *       not native to Java. The <i>valid</i> flag is designed to indicate if it's safe to
+ *       continue mutating the Message in the JVM (<i>valid: true</i>) or if it's expected
  *       that the Message is owned by the native NNG layer (and expected to have its backing
  *       memory freed automatically).
  */
 public class Message implements AutoCloseable {
-    //// DANGER
-    public static AtomicInteger created = new AtomicInteger(0);
-    public static AtomicInteger freed = new AtomicInteger(0);
-    public static AtomicInteger invalidated = new AtomicInteger(0);
-    public static AtomicInteger invalidatedAtTimeOfFreeing = new AtomicInteger(0);
 
+    // Global counter of allocated Messages
+    public static AtomicInteger created = new AtomicInteger(0);
+    // Global counter of freed Messages
+    public static AtomicInteger freed = new AtomicInteger(0);
+    // Global counter of invalidated Messages (i.e. ownership passed to native memory)
+    public static AtomicInteger invalidated = new AtomicInteger(0);
+
+    // Indicates if the Message instance is still owned by the JVM
     protected AtomicBoolean valid = new AtomicBoolean(false);
+
     private MessagePointer msg;
 
+    /**
+     * Allocate a new Message with a 0-byte Body
+     * @throws NngException
+     */
     public Message() throws NngException {
         this(0);
     }
@@ -257,19 +265,32 @@ public class Message implements AutoCloseable {
         return ref.getUInt32().intValue();
     }
 
+    /**
+     * Attempt to deallocate the underlying nng_msg, releasing unmanaged memory.
+     *
+     * This action only occurs if the Message is currently valid and owned by the JVM. If freed, the
+     * Message is no longer valid.
+     *
+     * Note: it's recommended that the programmer liberally make use for {@link #free()} when they
+     * know their {@link Message} instance is no longer required and <u>not</u> to rely solely on
+     * the garbage collector. Native heap fragmentation can occur if large quantities of messages
+     * are freed, as will happen if waiting for a gc event to clean up. The end result typically is
+     * excessive memory use and in the worst cases result in out of memory conditions for the JVM
+     * process.
+     */
     public void free() {
         if (valid.compareAndSet(true, false)) {
             // System.out.println("JVM freeing Message " + this);
             Nng.lib().nng_msg_free(msg);
             freed.incrementAndGet();
-            invalidatedAtTimeOfFreeing.incrementAndGet();
         }
     }
 
     /**
-     * Set the Message state back to valid.
+     * Set the Message state back to valid and owned by the JVM.
      *
-     * XXX: this API is in flux, is dangerous, and shouldn't be used publicly yet.
+     * N.b. This should be used typically only when a Send of the Message fails and the nng library
+     * didn't take ownership.
      */
     public void setValid() {
         if (valid.compareAndSet(false, true)) {
@@ -277,16 +298,30 @@ public class Message implements AutoCloseable {
         }
     }
 
+    /**
+     * Set the message invalid, preventing the JVM from attempting to free the underlying native
+     * memory during garbage collection.
+     */
     public void setInvalid() {
         if (valid.compareAndSet(true, false)) {
             invalidated.incrementAndGet();
         }
     }
 
+    /**
+     * Check if the Message is still valid or not.
+     *
+     * @return boolean whether or not the Message is valid
+     */
     public boolean isValid() {
         return valid.get();
     }
 
+    /**
+     * Cleanup the Message, attempting to free it if required.
+     *
+     * @throws Throwable
+     */
     @Override
     protected void finalize() throws Throwable {
         try {

@@ -5,9 +5,11 @@ import io.sisu.nng.NngException;
 import io.sisu.nng.Socket;
 
 /**
- * Interface for the NNG aio API primarily to be used by AioCallbacks.
+ * Interface for the {@link Aio} API primarily to be used by an {@link AioCallback}.
  *
- * Each of these methods should correspond to those commonly used by aio callbacks in NNG programs.
+ * Each of these methods should correspond to those commonly used by {@link Aio} callbacks in NNG
+ * programs. In practice, those using {@link Context} will use a {@link ContextProxy} when writing
+ * event handlers and not call methods on the {@link AioProxy} directly.
  */
 public interface AioProxy {
     void setMessage(Message msg);

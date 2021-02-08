@@ -1,10 +1,8 @@
 package io.sisu.nng;
 
-import com.sun.jna.ptr.IntByReference;
 import io.sisu.nng.aio.Aio;
 import io.sisu.nng.aio.Context;
 import io.sisu.nng.bench.ClientRunnable;
-import io.sisu.nng.internal.jna.UInt64ByReference;
 import io.sisu.nng.reqrep.Rep0Socket;
 import io.sisu.nng.reqrep.Req0Socket;
 
