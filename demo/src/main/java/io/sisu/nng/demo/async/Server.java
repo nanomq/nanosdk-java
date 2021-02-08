@@ -6,6 +6,9 @@ import io.sisu.nng.Socket;
 import io.sisu.nng.aio.Context;
 import io.sisu.nng.reqrep.Rep0Socket;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Java implementation of the NNG async demo server program.
  *
@@ -21,40 +24,33 @@ public class Server {
     }
 
     public void start() throws Exception {
-        Socket socket = new Rep0Socket();
+        try (Socket socket = new Rep0Socket()) {
+            // keep Context references to prevent any possible gc
+            List<Context> contexts = new ArrayList<>(PARALLEL);
 
-        for (int i=0; i < PARALLEL; i++) {
-            Context ctx = new Context(socket);
-            ctx.setRecvHandler((proxy, msg) -> {
-                System.out.println(String.format("%s: received message",
-                        Thread.currentThread().getName()));
-                try {
-                    int when = msg.trim32Bits();
-                    proxy.sleep(when);
-                    proxy.put("reply", msg);
-                } catch (NngException e) {
-                    proxy.receive();
-                }
-            });
-            ctx.setSendHandler((proxy) -> {
-                System.out.println(String.format("%s: sent message",
-                        Thread.currentThread().getName()));
-                proxy.receive();
-            });
-            ctx.setWakeHandler((proxy) -> {
-                System.out.println(String.format("%s: woke from sleep",
-                        Thread.currentThread().getName()));
-                proxy.send((Message) proxy.get("reply"));
-            });
+            for (int i = 0; i < PARALLEL; i++) {
+                Context ctx = new Context(socket);
+                ctx.setRecvHandler((ctxProxy, msg) -> {
+                    try {
+                        int when = msg.trim32Bits();
+                        ctxProxy.sleep(when);
+                        ctxProxy.put("reply", msg);
+                    } catch (NngException e) {
+                        ctxProxy.receive();
+                    }
+                });
+                ctx.setSendHandler((ctxProxy) -> ctxProxy.receive());
+                ctx.setWakeHandler((ctxProxy) -> ctxProxy.send((Message) ctxProxy.get("reply")));
 
-            // perform the initial receive operation to start the "event loop"
-            ctx.receiveMessage();
+                // perform the initial receive operation to start the "event loop"
+                ctx.receiveMessage();
+            }
+
+            socket.listen(this.url);
+            System.out.println("Listening on " + this.url);
+
+            Thread.sleep(1000 * 60 * 20);
         }
-
-        socket.listen(this.url);
-        System.out.println("Listening on " + this.url);
-
-        Thread.sleep(1000 * 60 * 20);
     }
 
     public static void main(String argv[]) {
@@ -64,7 +60,6 @@ public class Server {
         }
 
         Server server = new Server(argv[0]);
-
         try {
             server.start();
         } catch (Exception e) {

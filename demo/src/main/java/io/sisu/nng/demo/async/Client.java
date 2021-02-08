@@ -18,23 +18,19 @@ public class Client {
     }
 
     public void run() throws NngException {
-        long start, end;
-
-        Socket sock = new Req0Socket();
-        sock.dial(url);
-
-        start = System.currentTimeMillis();
-
         Message msg = new Message();
         msg.appendU32(millis);
 
-        sock.sendMessage(msg);
-        sock.receiveMessage();
+        try (Socket sock = new Req0Socket()) {
+            sock.dial(url);
 
-        end = System.currentTimeMillis();
-        sock.close();
+            long start = System.currentTimeMillis();
+            sock.sendMessage(msg);
+            sock.receiveMessage();
+            long end = System.currentTimeMillis();
 
-        System.out.println(String.format("Request took %d milliseconds.", end - start));
+            System.out.println(String.format("Request took %d milliseconds.", end - start));
+        }
     }
 
     public static void main(String argv[]) {
