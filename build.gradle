@@ -7,7 +7,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 group 'io.sisu'
-version '1.4.0-SNAPSHOT'
+version '1.4.0-alpha1'
 
 repositories {
     mavenCentral()
