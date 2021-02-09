@@ -28,11 +28,10 @@ public class ReqRep {
             Socket socket = new Rep0Socket();
             socket.listen(this.url);
 
-            ByteBuffer buffer = ByteBuffer.allocateDirect(8);
-            buffer.order(ByteOrder.nativeOrder());
-            buffer.clear();
+            ByteBuffer buffer = ByteBuffer.allocate(8);
 
             while (true) {
+                buffer.clear();
                 long size = socket.receive(buffer);
                 if (size == 8) {
                     System.out.println("SERVER: RECEIVED DATE REQUEST");
@@ -58,9 +57,7 @@ public class ReqRep {
 
         public void run() throws NngException {
             // PUT64 analog
-            ByteBuffer buffer = ByteBuffer.allocateDirect(8);
-            buffer.order(ByteOrder.nativeOrder());
-            buffer.clear();
+            ByteBuffer buffer = ByteBuffer.allocate(8);
             buffer.putInt(DATE_CMD);
             buffer.putInt(0); // required for padding to send all 8 bytes for now
             buffer.flip();
