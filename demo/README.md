@@ -60,7 +60,7 @@ The raw demo demonstrates multiple concepts:
    instead of higher-level constructs like Contexts
 2. Using raw-mode Sockets (instead of regular "cooked" Sockets)
 
-> It's my understanding certain protocols do not support Contexts and directly
+> It's my understanding certain protocols do not support Contexts and directly 
 > using AIOs is the only way for event-based messaging
 
 The server logic mostly mirrors the [async](#async) demo in that it receives
@@ -69,12 +69,13 @@ a number from the client that dictates a simulated "busy time."
 The client is similar as well, but takes the time in _seconds_ (not ms).
 
 To run, there's a single main class for client and server, but the client mode
-is enabled by adding the sleep argument `-s`:
+is enabled by adding a numeric sleep argument while the server takes a `-s`
+flag:
 
 ```
 $ java -cp ./demo/libs/demo-${version}-all.jar \
     io.sisu.nng.demo.raw.Raw \
-    tcp://localhost:9999 [-s <sleep time>]
+    tcp://localhost:9999 [-s | <sleep time in seconds>]
 ```
 
 ### ReqRep
