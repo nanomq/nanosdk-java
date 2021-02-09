@@ -80,7 +80,7 @@ public abstract class Socket implements AutoCloseable {
      * Send a new Message using the provided ByteBuffer for the message body
      *
      * @param buffer a ByteBuffer containing the message body
-     * @throws NngException
+     * @throws NngException if an nng error occurs during sending
      */
     public void sendMessage(ByteBuffer buffer) throws NngException {
         sendMessage(buffer, null);

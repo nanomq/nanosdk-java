@@ -370,8 +370,11 @@ public class Message implements AutoCloseable {
 
     /**
      * Removes 32 bits from the start of the Message body, returning then in network byte order.
+     * <p>
+     * Note: it's assumed the value is in network byte order
      *
-     * @throws NngException on error
+     * @return an int value from the leading 32 bits of the message
+     * @throws NngException on error trimming the message
      */
     public int trim32Bits() throws NngException {
         UInt32ByReference ref = new UInt32ByReference();
@@ -437,7 +440,7 @@ public class Message implements AutoCloseable {
     /**
      * Cleanup the Message, attempting to free it if required.
      * <p>
-     * TODO: replace with the {@link jdk.internal.ref.Cleaner} api
+     * TODO: replace with the Java Cleaner api
      *
      * @throws Throwable only if the super's finalize throws an error
      */

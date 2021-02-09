@@ -7,7 +7,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 group 'io.sisu'
-version '1.4.0-alpha1'
+version '1.4.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
@@ -21,6 +21,10 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+task getVersion {
+    System.out.println("${project.version}")
 }
 
 project(':benchmarks') {
