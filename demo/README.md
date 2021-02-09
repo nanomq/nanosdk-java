@@ -53,7 +53,7 @@ $ java -cp ./demo/libs/demo-${version}-all.jar \
     tcp://localhost:9999 100
 ```
 
-### Raw
+## Raw
 The raw demo demonstrates multiple concepts:
 
 1. How to utilize the lower-level AIO api in Java, using AioCallbacks directly
@@ -78,7 +78,7 @@ $ java -cp ./demo/libs/demo-${version}-all.jar \
     tcp://localhost:9999 [-s | <sleep time in seconds>]
 ```
 
-### ReqRep
+## ReqRep
 This demo is a simplistic RPC service providing a `DATE` service for clients
 to call and receive a UNIX timestamp as a response.
 
