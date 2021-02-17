@@ -288,6 +288,19 @@ public class NngDirectLibrary implements NngLibrary {
     public native int nng_http_server_start(HttpServerPointer server);
     public native void nng_http_server_stop(HttpServerPointer server);
 
+    public native int nng_tls_config_alloc(TlsConfigByReference ref, int mode);
+    public native int nng_tls_config_auth_mode(TlsConfigPointer cfg, int mode);
+    public native int nng_tls_config_ca_chain(TlsConfigPointer cfg, String chain, String crl);
+    public native  int nng_tls_config_ca_file(TlsConfigPointer cfg, String path);
+    public native int nng_tls_config_cert_key_file(TlsConfigPointer cfg, String pathToKey, String password);
+    public native int nng_tls_config_free(TlsConfigPointer cfg);
+    public native int nng_tls_config_hold(TlsConfigPointer cfg);
+    public native int nng_tls_config_own_cert(TlsConfigPointer cfg, String cert, String key, String password);
+    public native int nng_tls_config_server_name(TlsConfigPointer cfg, String serverName);
+    public native int nng_tls_config_version(TlsConfigPointer cfg, int minVersion, int maxVersion);
+    public native String nng_tls_engine_description();
+    public native boolean nng_tls_engine_fips_mode();
+    public native String nng_tls_engine_name();
     // XXX: Memtrack...requires patch to NNG that tracks memory allocation
     // public native int nng_memtrack(UInt64ByReference alloc, UInt64ByReference freed);
 }

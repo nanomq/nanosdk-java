@@ -170,16 +170,6 @@ public interface NngLibrary extends Library {
     int nng_surveyor0_open(SocketStruct socket);
     int nng_surveyor0_open_raw(SocketStruct socket);
 
-    // Transports
-    /*
-    int nng_inproc_register();
-    int nng_ipc_register();
-    int nng_tcp_register();
-    int nng_tls_register();
-    int nng_ws_register();
-    int nng_wss_register();
-    int nng_zt_register();
-*/
     // Protocol Contexts
     int nng_ctx_close(ContextStruct.ByValue context);
     int nng_ctx_id(ContextStruct.ByValue context);
@@ -281,6 +271,20 @@ public interface NngLibrary extends Library {
     //todo: more
     int nng_http_server_start(HttpServerPointer server);
     void nng_http_server_stop(HttpServerPointer server);
+
+    int nng_tls_config_alloc(TlsConfigByReference ref, int mode);
+    int nng_tls_config_auth_mode(TlsConfigPointer cfg, int mode);
+    int nng_tls_config_ca_chain(TlsConfigPointer cfg, String chain, String crl);
+    int nng_tls_config_ca_file(TlsConfigPointer cfg, String path);
+    int nng_tls_config_cert_key_file(TlsConfigPointer cfg, String pathToKey, String password);
+    int nng_tls_config_free(TlsConfigPointer cfg);
+    int nng_tls_config_hold(TlsConfigPointer cfg);
+    int nng_tls_config_own_cert(TlsConfigPointer cfg, String cert, String key, String password);
+    int nng_tls_config_server_name(TlsConfigPointer cfg, String serverName);
+    int nng_tls_config_version(TlsConfigPointer cfg, int minVersion, int maxVersion);
+    String nng_tls_engine_description();
+    boolean nng_tls_engine_fips_mode();
+    String nng_tls_engine_name();
 
     // XXX Memtrack...requires patch for NNG to track memory allocation
     // int nng_memtrack(UInt64ByReference alloc, UInt64ByReference freed);

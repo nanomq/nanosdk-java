@@ -243,6 +243,15 @@ public abstract class Socket implements AutoCloseable {
         return receive(buffer, true);
     }
 
+    public void setTlsConfig(TlsConfig config) throws NngException {
+        int rv;
+
+        rv = Nng.lib().nng_socket_set_ptr(this.socket, NngOptions.TLS_CONFIG, config.getPointer());
+        if (rv != 0) {
+            throw new NngException(Nng.lib().nng_strerror(rv));
+        }
+    }
+
     public SocketStruct getSocketStruct() {
         return socket;
     }
