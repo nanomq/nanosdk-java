@@ -67,20 +67,20 @@ public class TlsConfig {
 
     public TlsConfig(SocketMode mode) throws NngException {
         TlsConfigByReference ref = new TlsConfigByReference();
-        int rv = Nng.lib().nng_tls_config_alloc(ref, mode.getValue());
-        if (rv != 0) {
-            // XXX: only issue should be memory related. Throw for now.
-            throw new NngException(Nng.lib().nng_strerror(rv));
-        }
-        this.tls = ref.getTlsConfig();
+//        int rv = Nng.lib().nng_tls_config_alloc(ref, mode.getValue());
+//        if (rv != 0) {
+//            // XXX: only issue should be memory related. Throw for now.
+//            throw new NngException(Nng.lib().nng_strerror(rv));
+//        }
+//        this.tls = ref.getTlsConfig();
         this.socketMode = mode;
     }
 
     void setAuthMode(AuthMode authMode) throws NngException {
-        int rv = Nng.lib().nng_tls_config_auth_mode(this.tls, authMode.value);
-        if (rv != 0) {
-            throw new NngException(Nng.lib().nng_strerror(rv));
-        }
+//        int rv = Nng.lib().nng_tls_config_auth_mode(this.tls, authMode.value);
+//        if (rv != 0) {
+//            throw new NngException(Nng.lib().nng_strerror(rv));
+//        }
     }
 
     void setCertificate(String cert, String key) throws NngException {
@@ -88,24 +88,24 @@ public class TlsConfig {
     }
 
     void setCertificate(String cert, String key, String password) throws NngException {
-        int rv = Nng.lib().nng_tls_config_own_cert(this.tls, cert, key, password);
-        if (rv != 0) {
-            throw new NngException(Nng.lib().nng_strerror(rv));
-        }
+//        int rv = Nng.lib().nng_tls_config_own_cert(this.tls, cert, key, password);
+//        if (rv != 0) {
+//            throw new NngException(Nng.lib().nng_strerror(rv));
+//        }
     }
 
     void setPrivateKey(Path keyFile, String password) throws NngException {
-        int rv = Nng.lib().nng_tls_config_cert_key_file(this.tls, keyFile.toString(), password);
-        if (rv != 0) {
-            throw new NngException(Nng.lib().nng_strerror(rv));
-        }
+//        int rv = Nng.lib().nng_tls_config_cert_key_file(this.tls, keyFile.toString(), password);
+//        if (rv != 0) {
+//            throw new NngException(Nng.lib().nng_strerror(rv));
+//        }
     }
 
     void setServerName(String name) throws NngException {
-        int rv = Nng.lib().nng_tls_config_server_name(this.tls, name);
-        if (rv != 0) {
-            throw new NngException(Nng.lib().nng_strerror(rv));
-        }
+//        int rv = Nng.lib().nng_tls_config_server_name(this.tls, name);
+//        if (rv != 0) {
+//            throw new NngException(Nng.lib().nng_strerror(rv));
+//        }
     }
 
     protected Pointer getPointer() {
