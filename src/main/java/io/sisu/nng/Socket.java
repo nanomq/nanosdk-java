@@ -9,6 +9,7 @@ import io.sisu.nng.internal.jna.Size;
 import io.sisu.nng.internal.jna.SizeByReference;
 
 import java.nio.ByteBuffer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -20,6 +21,7 @@ public abstract class Socket implements AutoCloseable {
 
     // Underlying nng_socket struct. Primarily an opaque data type with a public id
     protected final SocketStruct.ByValue socket;
+    private String url;
 
     protected Socket(Function<SocketStruct, Integer> socketOpener) throws NngException {
         final SocketStruct ref = new SocketStruct();
@@ -31,10 +33,22 @@ public abstract class Socket implements AutoCloseable {
         this.socket = new SocketStruct.ByValue(ref);
     }
 
+    protected Socket(BiFunction<SocketStruct, String, Integer> socketOpener, String url) throws NngException {
+        final SocketStruct ref = new SocketStruct();
+        int rv = socketOpener.apply(ref, url);
+
+        if (rv != 0) {
+            String err = Nng.lib().nng_strerror(rv);
+            throw new NngException(err);
+        }
+        this.socket = new SocketStruct.ByValue(ref);
+        this.url = url;
+    }
+
     /**
      * Close the Socket. Outstanding messages or data may or may not be flushed, depending on the
      * protocol.
-     *
+     * <p>
      * Note: Data loss may occur if the Socket is closed if there are outstanding messages in the
      * underlying send queue.
      *
@@ -243,14 +257,14 @@ public abstract class Socket implements AutoCloseable {
         return receive(buffer, true);
     }
 
-    public void setTlsConfig(TlsConfig config) throws NngException {
-        int rv;
-
-        rv = Nng.lib().nng_socket_set_ptr(this.socket, NngOptions.TLS_CONFIG, config.getPointer());
-        if (rv != 0) {
-            throw new NngException(Nng.lib().nng_strerror(rv));
-        }
-    }
+//    public void setTlsConfig(TlsConfig config) throws NngException {
+//        int rv;
+//
+//        rv = Nng.lib().nng_socket_set_ptr(this.socket, NngOptions.TLS_CONFIG, config.getPointer());
+//        if (rv != 0) {
+//            throw new NngException(Nng.lib().nng_strerror(rv));
+//        }
+//    }
 
     public SocketStruct getSocketStruct() {
         return socket;
