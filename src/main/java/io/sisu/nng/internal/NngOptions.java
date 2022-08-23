@@ -49,4 +49,12 @@ public class NngOptions {
 
     // Surveyor Options
     public static final String SURVEYOR_SURVEYTIME = "surveyor:survey-time";
+
+    // MQTT Options
+    public static final String NNG_OPT_MQTT_CONNMSG = "mqtt-connect-msg";
+    public static final String NNG_OPT_MQTT_CONNECT_PROPERTY = "mqtt-connack-property";
+    public static final String NNG_OPT_MQTT_CONNECT_REASON = "mqtt-connack-reason";
+    public static final String NNG_OPT_MQTT_DISCONNECT_PROPERTY = "mqtt-disconnect-property";
+    public static final String NNG_OPT_MQTT_DISCONNECT_REASON = "mqtt-disconnect-reason";
+
 }
