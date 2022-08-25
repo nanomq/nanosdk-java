@@ -741,14 +741,14 @@ public class NngDirectLibrary implements NngLibrary {
 
     public native int nng_mqtt_disconnect(SocketStruct socket, byte code, PropertyPointer property);
 
-//    public native int nng_mqtt_quic_set_connect_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
-//
-//    public native int nng_mqtt_quic_set_disconnect_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
-//
-//    public native int nng_mqtt_quic_set_msg_recv_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
-//
-//    public native int nng_mqtt_quic_set_msg_send_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
-//
+    public native int nng_mqtt_quic_set_connect_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
+
+    public native int nng_mqtt_quic_set_disconnect_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
+
+    public native int nng_mqtt_quic_set_msg_recv_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
+
+    public native int nng_mqtt_quic_set_msg_send_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
+
 
     // XXX: Memtrack...requires patch to NNG that tracks memory allocation
     // public native int nng_memtrack(UInt64ByReference alloc, UInt64ByReference freed);

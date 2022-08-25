@@ -732,13 +732,13 @@ public interface NngLibrary extends Library {
 
     int nng_mqtt_quic_client_open(SocketStruct socket, String url);
 
-//    int nng_mqtt_quic_set_connect_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
-//
-//    int nng_mqtt_quic_set_disconnect_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
-//
-//    int nng_mqtt_quic_set_msg_recv_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
-//
-//    int nng_mqtt_quic_set_msg_send_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
+    int nng_mqtt_quic_set_connect_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
+
+    int nng_mqtt_quic_set_disconnect_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
+
+    int nng_mqtt_quic_set_msg_recv_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
+
+    int nng_mqtt_quic_set_msg_send_cb(SocketStruct socket, NngMsgCallback callback, Pointer arg);
 
     ////    nng_mqtt_client *
 ////
