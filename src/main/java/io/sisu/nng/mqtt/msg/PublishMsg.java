@@ -17,6 +17,10 @@ public class PublishMsg extends MqttMessage {
         super(MqttPacketType.NNG_MQTT_PUBLISH);
     }
 
+    public PublishMsg(Pointer p) throws NngException {
+        super(p);
+    }
+
     public void setQos(byte qos) {
         Nng.lib().nng_mqtt_msg_set_publish_qos(super.msg, qos);
     }

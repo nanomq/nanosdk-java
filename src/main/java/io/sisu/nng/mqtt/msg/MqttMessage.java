@@ -26,6 +26,10 @@ public class MqttMessage extends Message {
         this(0);
     }
 
+    public MqttMessage(Pointer p) throws NngException {
+        super(p);
+    }
+
     public MqttMessage(MqttPacketType packetType) throws NngException {
         this(0);
         Nng.lib().nng_mqtt_msg_set_packet_type(this.msg, packetType.getValue());

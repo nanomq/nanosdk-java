@@ -19,6 +19,10 @@ public class ConnectMsg extends MqttMessage {
         super(MqttPacketType.NNG_MQTT_CONNECT);
     }
 
+    public ConnectMsg(Pointer p) throws NngException {
+        super(p);
+    }
+
     public void setProtoVersion(int version) {
         Nng.lib().nng_mqtt_msg_set_connect_proto_version(super.msg, (byte) version);
     }
