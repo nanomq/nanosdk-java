@@ -20,8 +20,6 @@ import java.nio.ByteBuffer;
 
 public class MqttMessage extends Message {
 
-    protected MessagePointer msg;
-
     public MqttMessage() throws NngException {
         this(0);
     }
@@ -30,9 +28,13 @@ public class MqttMessage extends Message {
         super(p);
     }
 
+    public MqttMessage(MessagePointer p) throws NngException {
+        super(p);
+    }
+
     public MqttMessage(MqttPacketType packetType) throws NngException {
         this(0);
-        Nng.lib().nng_mqtt_msg_set_packet_type(this.msg, packetType.getValue());
+        Nng.lib().nng_mqtt_msg_set_packet_type(super.msg, packetType.getValue());
     }
 
     public MqttMessage(int size) throws NngException {
@@ -42,7 +44,7 @@ public class MqttMessage extends Message {
             final String err = Nng.lib().nng_strerror(rv);
             throw new NngException(err);
         }
-        msg = ref.getMessage();
+        super.msg = ref.getMessage();
         valid.set(true);
         created.incrementAndGet();
     }
@@ -56,11 +58,11 @@ public class MqttMessage extends Message {
 //    }
 
     public void setPacketType(MqttPacketType packetType) {
-        Nng.lib().nng_mqtt_msg_set_packet_type(this.msg, packetType.getValue());
+        Nng.lib().nng_mqtt_msg_set_packet_type(super.msg, packetType.getValue());
     }
 
     public MqttPacketType getPacketType() {
-        byte pkType = Nng.lib().nng_mqtt_msg_get_packet_type(this.msg);
+        byte pkType = Nng.lib().nng_mqtt_msg_get_packet_type(super.msg);
         return MqttPacketType.getFromValue(pkType);
     }
 

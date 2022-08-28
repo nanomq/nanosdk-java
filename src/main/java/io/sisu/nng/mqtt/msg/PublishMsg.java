@@ -1,8 +1,10 @@
 package io.sisu.nng.mqtt.msg;
 
 import com.sun.jna.Pointer;
+import io.sisu.nng.Message;
 import io.sisu.nng.Nng;
 import io.sisu.nng.NngException;
+import io.sisu.nng.internal.MessagePointer;
 import io.sisu.nng.internal.jna.UInt32;
 import io.sisu.nng.internal.jna.UInt32ByReference;
 import io.sisu.nng.internal.mqtt.BytesPointer;
@@ -17,8 +19,8 @@ public class PublishMsg extends MqttMessage {
         super(MqttPacketType.NNG_MQTT_PUBLISH);
     }
 
-    public PublishMsg(Pointer p) throws NngException {
-        super(p);
+    public PublishMsg(Message message) throws NngException {
+        super(message.getMessagePointer());
     }
 
     public void setQos(byte qos) {
@@ -61,16 +63,16 @@ public class PublishMsg extends MqttMessage {
         return topic.substring(0, len);
     }
 
-    public void setPayload(byte[] payload, long len) {
-        Nng.lib().nng_mqtt_msg_set_publish_payload(super.msg, payload, new UInt32(len));
+    public void setPayload(byte[] payload) {
+        Nng.lib().nng_mqtt_msg_set_publish_payload(super.msg, payload, new UInt32(payload.length));
     }
 
-    public void setPayload(ByteBuffer payload, long len) {
-        Nng.lib().nng_mqtt_msg_set_publish_payload(super.msg, payload, new UInt32(len));
+    public void setPayload(ByteBuffer payload) {
+        Nng.lib().nng_mqtt_msg_set_publish_payload(super.msg, payload, new UInt32(payload.limit() - payload.position()));
     }
 
-    public void setPayload(Pointer payload, long len) {
-        Nng.lib().nng_mqtt_msg_set_publish_payload(super.msg, payload, new UInt32(len));
+    public void setPayload(String payload) {
+        Nng.lib().nng_mqtt_msg_set_publish_payload(super.msg, payload.getBytes(), new UInt32(payload.length()));
     }
 
     public ByteBuffer getPayload() {
@@ -90,5 +92,4 @@ public class PublishMsg extends MqttMessage {
     public void setProperty(PropertyPointer property) {
         Nng.lib().nng_mqtt_msg_set_publish_property(super.msg, property);
     }
-
 }

@@ -1,6 +1,7 @@
 package io.sisu.nng.mqtt.msg;
 
 import com.sun.jna.Pointer;
+import io.sisu.nng.Message;
 import io.sisu.nng.Nng;
 import io.sisu.nng.NngException;
 import io.sisu.nng.internal.jna.UInt32ByReference;
@@ -15,8 +16,8 @@ public class SubackMsg extends MqttMessage {
         super(MqttPacketType.NNG_MQTT_SUBACK);
     }
 
-    public SubackMsg(Pointer p) throws NngException {
-        super(p);
+    public SubackMsg(Message msg) throws NngException {
+        super(msg.getMessagePointer());
     }
 
     public ByteBuffer getReturnCodes() {

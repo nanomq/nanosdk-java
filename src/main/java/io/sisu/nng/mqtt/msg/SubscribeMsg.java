@@ -1,6 +1,7 @@
 package io.sisu.nng.mqtt.msg;
 
 import com.sun.jna.Pointer;
+import io.sisu.nng.Message;
 import io.sisu.nng.Nng;
 import io.sisu.nng.NngException;
 import io.sisu.nng.internal.jna.Size;
@@ -20,8 +21,8 @@ public class SubscribeMsg extends MqttMessage {
         super(MqttPacketType.NNG_MQTT_SUBSCRIBE);
     }
 
-    public SubscribeMsg(Pointer p) throws NngException {
-        super(p);
+    public SubscribeMsg(Message msg) throws NngException {
+        super(msg.getMessagePointer());
     }
 
     public SubscribeMsg(List<TopicQos> topicQosList) throws NngException {

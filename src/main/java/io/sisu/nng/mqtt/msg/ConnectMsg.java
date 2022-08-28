@@ -1,8 +1,10 @@
 package io.sisu.nng.mqtt.msg;
 
 import com.sun.jna.Pointer;
+import io.sisu.nng.Message;
 import io.sisu.nng.Nng;
 import io.sisu.nng.NngException;
+import io.sisu.nng.internal.MessagePointer;
 import io.sisu.nng.internal.jna.UInt16;
 import io.sisu.nng.internal.jna.UInt32;
 import io.sisu.nng.internal.jna.UInt32ByReference;
@@ -13,14 +15,15 @@ import io.sisu.nng.internal.mqtt.constants.MqttPacketType;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
-public class ConnectMsg extends MqttMessage {
+public class
+ConnectMsg extends MqttMessage {
 
     public ConnectMsg() throws NngException {
         super(MqttPacketType.NNG_MQTT_CONNECT);
     }
 
-    public ConnectMsg(Pointer p) throws NngException {
-        super(p);
+    public ConnectMsg(Message msg) throws NngException {
+        super(msg.getMessagePointer());
     }
 
     public void setProtoVersion(int version) {
@@ -75,36 +78,36 @@ public class ConnectMsg extends MqttMessage {
         Nng.lib().nng_mqtt_msg_set_connect_property(super.msg, property);
     }
 
-    String getUserName() {
+    public String getUserName() {
         return Nng.lib().nng_mqtt_msg_get_connect_user_name(super.msg);
     }
 
-    String getPassword() {
+    public String getPassword() {
         return Nng.lib().nng_mqtt_msg_get_connect_password(super.msg);
     }
 
-    boolean getCleanSession() {
+    public boolean getCleanSession() {
         return Nng.lib().nng_mqtt_msg_get_connect_clean_session(super.msg);
     }
 
-    int getProtoVersion() {
+    public int getProtoVersion() {
         return Nng.lib().nng_mqtt_msg_get_connect_proto_version(super.msg);
     }
 
-    short getKeepAlive() {
+    public short getKeepAlive() {
         UInt16 keepAlvin = Nng.lib().nng_mqtt_msg_get_connect_keep_alive(super.msg);
         return keepAlvin.convert();
     }
 
-    String getClientId() {
+    public String getClientId() {
         return Nng.lib().nng_mqtt_msg_get_connect_client_id(super.msg);
     }
 
-    String getWillTopic() {
+    public String getWillTopic() {
         return Nng.lib().nng_mqtt_msg_get_connect_will_topic(super.msg);
     }
 
-    ByteBuffer getWillMsg() {
+    public ByteBuffer getWillMsg() {
         UInt32ByReference u32 = new UInt32ByReference();
         BytesPointer willMsg = Nng.lib().nng_mqtt_msg_get_connect_will_msg(super.msg, u32);
         int len = u32.getUInt32().intValue();
@@ -117,16 +120,16 @@ public class ConnectMsg extends MqttMessage {
         return willMsg.getPointer().getByteBuffer(0, len);
     }
 
-    boolean getWillRetain() {
+    public boolean getWillRetain() {
         return Nng.lib().nng_mqtt_msg_get_connect_will_retain(super.msg);
     }
 
-    byte getWillQos() {
+    public byte getWillQos() {
         return Nng.lib().nng_mqtt_msg_get_connect_will_qos(super.msg);
     }
 
-    PropertyPointer getProperty() {
-        return Nng.lib().nng_mqtt_msg_get_connect_property(super.msg);
-    }
+//    PropertyPointer getProperty() {
+//        return Nng.lib().nng_mqtt_msg_get_connect_property(super.msg);
+//    }
 
 }

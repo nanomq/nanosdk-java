@@ -1,6 +1,7 @@
 package io.sisu.nng.mqtt.msg;
 
 import com.sun.jna.Pointer;
+import io.sisu.nng.Message;
 import io.sisu.nng.Nng;
 import io.sisu.nng.NngException;
 import io.sisu.nng.internal.mqtt.PropertyPointer;
@@ -12,8 +13,8 @@ public class ConnackMsg extends MqttMessage{
         super(MqttPacketType.NNG_MQTT_CONNACK);
     }
 
-    public ConnackMsg(Pointer p) throws NngException {
-        super(p);
+    public ConnackMsg(Message message) throws NngException {
+        super(message.getMessagePointer());
     }
 
     public byte getReturnCode() {
