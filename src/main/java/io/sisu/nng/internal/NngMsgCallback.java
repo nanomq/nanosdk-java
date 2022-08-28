@@ -5,5 +5,5 @@ import com.sun.jna.Pointer;
 import io.sisu.nng.NngException;
 
 public interface NngMsgCallback extends Callback {
-    void callback(Pointer arg1, Pointer arg2) throws NngException;
+    int callback(Pointer p1, Pointer p2);
 }
