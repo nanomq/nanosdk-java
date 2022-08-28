@@ -622,8 +622,6 @@ public interface NngLibrary extends Library {
 
     void nng_mqtt_msg_set_publish_payload(MessagePointer msg, ByteBuffer payload, UInt32 len);
 
-    void nng_mqtt_msg_set_publish_payload(MessagePointer msg, Pointer payload, UInt32 len);
-
     BytesPointer nng_mqtt_msg_get_publish_payload(MessagePointer msg, UInt32ByReference len);
 
     PropertyPointer nng_mqtt_msg_get_publish_property(MessagePointer msg);
