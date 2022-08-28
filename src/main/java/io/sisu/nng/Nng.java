@@ -1,7 +1,6 @@
 package io.sisu.nng;
 
 import com.sun.jna.Callback;
-import com.sun.jna.Native;
 import io.sisu.nng.internal.NngDirectLibrary;
 import io.sisu.nng.internal.NngLibrary;
 
@@ -10,14 +9,13 @@ import java.util.Properties;
 /**
  * Simple singleton access point. Only works in simple environments where nng is installed in
  * standard places.
- *
+ * <p>
  * Use either the <pre>jna.library.path</pre> System property or set a <pre>JNA_LIBRARY_PATH</pre>
  * environment variable to point to the location of libnng if it's not already accessible. You may
  * need to also add this to the classpath.
  */
 public class Nng {
     private static NngLibrary directLibrary = null;
-    private static NngLibrary library = null;
 
     public static class NngUncaughtExceptionHandler implements Callback.UncaughtExceptionHandler {
         @Override
@@ -31,6 +29,7 @@ public class Nng {
 
     /**
      * Get a reference to the nng library, registering it if needed.
+     *
      * @return a direct-mapped NngLibrary utilizing native methods
      */
     public static NngLibrary lib() {
