@@ -39,7 +39,7 @@ public class Message implements AutoCloseable {
     // Indicates if the Message instance is still owned by the JVM
     protected AtomicBoolean valid = new AtomicBoolean(false);
 
-    private MessagePointer msg;
+    protected MessagePointer msg;
 
     /**
      * Allocate a new Message with a 0-byte Body
