@@ -49,7 +49,7 @@ public class Nng {
             System.setProperty("jna.debug_load",
                     System.getenv().getOrDefault("JNA_DEBUG_LOAD", ""));
         }
-        if (!props.contains("jna.library.path")) {
+        if (!props.containsKey("jna.library.path")) {
             System.setProperty("jna.library.path",
                     System.getenv().getOrDefault("JNA_LIBRARY_PATH", ""));
         }
